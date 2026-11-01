@@ -80,6 +80,14 @@ final class DataReader {
   /// The map at [key], or null when it is absent.
   DataReader? optionalMap(String key) => _isAbsent(key) ? null : map(key);
 
+  /// The list at [key], each item read as a map.
+  List<DataReader> mapList(String key) =>
+      _items(key, 'a map', (item) => item is Map ? item : null).indexed
+          .map(
+            (entry) => DataReader(file, keyPath('$key[${entry.$1}]'), entry.$2),
+          )
+          .toList(growable: false);
+
   /// Every value of this map, each read as a map, by key.
   Map<String, DataReader> maps() => {for (final key in keys) key: map(key)};
 

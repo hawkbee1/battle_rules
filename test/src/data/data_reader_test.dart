@@ -24,6 +24,7 @@ tally: { a: 1, b: 2 }
 weights: { a: 1, b: 0.5 }
 gaps: { a: 1, b: null }
 numbered: { 1: a }
+rows: [{ side: 4 }, { side: 5 }]
 ''';
 
 DataReader _reader() => DataReader.parse('sample.yaml', _sample);
@@ -287,6 +288,22 @@ void main() {
         expect(() => reader.strings('names').add('c'), throwsUnsupportedError);
         expect(() => reader.integers('counts').add(3), throwsUnsupportedError);
         expect(() => reader.numbers('values').add(3), throwsUnsupportedError);
+      });
+    });
+
+    group('mapList', () {
+      test('reads each item of a list as a map', () {
+        final rows = _reader().mapList('rows');
+
+        expect([for (final row in rows) row.integer('side')], [4, 5]);
+        expect(rows.last.path, 'rows[1]');
+      });
+
+      test('rejects an item that is not a map', () {
+        expect(
+          () => _reader().mapList('names'),
+          throwsDataError('sample.yaml', 'names[0]', 'a', 'must be a map'),
+        );
       });
     });
 
