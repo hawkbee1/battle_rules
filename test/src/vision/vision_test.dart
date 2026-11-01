@@ -237,7 +237,7 @@ void main() {
       );
     });
 
-    test('COMBAT-11 MAP-30 a unit fires only at what it sees, within its '
+    test('MAP-30 COMBAT-11 a unit fires only at what it sees, within its '
         'weapon range', () {
       final jeep = units.unitTypes['jeep']!;
       bool canFire(SightLine line) => vision.canFireAt(
