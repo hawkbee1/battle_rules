@@ -1,0 +1,11 @@
+# Test fixture: a small valid medals file. Numbers are fixture values, not game data.
+version: 2
+tiers: [bronze, silver, gold]
+points: { bronze: 1, silver: 2, gold: 5 }
+
+kills:
+  commander: { bronze: 3, silver: 10, gold: 40 }
+  default:   { bronze: 10, silver: 50, gold: 200 }
+actions:
+  default:   { bronze: 20, silver: 100, gold: 400 }
+  kinds: [hit, build]

@@ -1,0 +1,96 @@
+# Test fixture: a small valid combat file. Numbers are fixture values, not game data.
+version: 4
+
+armor_types: [infantry, light_vehicle, heavy_vehicle, structure]
+
+weapon_types:
+  rifle:  { base_damage: 10, range_m: 300, ap_per_shot: 2, base_accuracy: 0.6, rate_of_fire_rpm: 30, magazine_capacity: 8, reload_time_s: 2, unload_time_s: 1, move_while_loaded: true, projectile_speed_mps: 800, airborne_factor: 0.25 }
+  cannon: { base_damage: 50, range_m: 900, ap_per_shot: 12, base_accuracy: 0.3, rate_of_fire_rpm: 3, magazine_capacity: 1, reload_time_s: 9, unload_time_s: 20, move_while_loaded: false, airborne_factor: 0, splash_radius_m: 6, deforms_terrain: true, indirect_fire: true }
+  charge: { base_damage: 70, range_m: 4, ap_per_shot: 15, rate_of_fire_rpm: 1, magazine_capacity: 1, reload_time_s: 8, unload_time_s: 4, move_while_loaded: true, airborne_factor: 0, splash_radius_m: 3, never_misses: true }
+
+multipliers:
+  rifle:  { infantry: 1, light_vehicle: 0.5, heavy_vehicle: 0.1, structure: 0.2 }
+  cannon: { infantry: 1, light_vehicle: 1, heavy_vehicle: 0.75, structure: 1.5 }
+  charge: { infantry: 2, light_vehicle: 1.5, heavy_vehicle: 1, structure: 2.5 }
+
+splash:
+  falloff: linear
+  damage_factor_at_edge: 0.25
+
+miss_scatter:
+  max_m: 80
+
+friendly_fire: { enabled: true, damage_factor: 0.5 }
+
+transport:
+  carried_damage_share: 0.2
+  ejection_damage_share_of_max_hp: 0.4
+
+morale:
+  range: [0, 80]
+  base: 40
+  events:
+    commander_aura_per_min: +3
+    nearby_enemy_killed: +4
+    nearby_ally_killed: -6
+    outnumbered_per_min: -2
+  nearby_radius_m: 40
+  outnumbered_ratio: 2
+
+zero_hp:
+  k: 0.5
+  defection_share: 0.25
+  only_when_final_blow_by: commander
+  target: enemy
+  never_spared: [commander, camp]
+
+prisoners:
+  held_in: captor_prisoner_storage
+  can_escape: false
+  ransom_fee: 0.1
+  at_war_end: lost
+
+ammo:
+  unlimited: true
+  reload_discards_remaining: true
+
+hit_chance:
+  clamp: { min: 0.1, max: 0.9 }
+  distance_factor: { at_zero: 1, at_max_range: 0.4 }
+  cover_factor: { none: 1, partial: 0.6, full: 0 }
+  size_factor: { infantry: 0.75, light_vehicle: 1, heavy_vehicle: 1.25, structure: 1.5 }
+  speed_factor: { per_mps: 0.03, min: 0.4 }
+  indirect_factor: 0.6
+  morale_factor: { at_0: 0.8, at_100: 1.2 }
+
+aim:
+  base_spread_deg: 3
+  spread_reduction_per_attack: 0.02
+  min_spread_deg: 0.5
+
+dropped_weapons:
+  pickup_ap: 4
+  despawn_after_s: 300
+
+weapon_swap:
+  time_s: 6
+
+ap:
+  at_zero: act_at_regen_rate
+  costs_ap: [shot, move]
+  time_only: [reload, unload]
+
+actions:
+  heal:    { instant: true, targets: friendly_except_hq }
+  repair:  { ap: 9, duration_s: 12, hp_restored: 40, targets: friendly_except_hq }
+  capture: { settings: data/battle.yaml, progress_owner: team }
+  interruption: { ap_refund: false, progress_kept: true, resume_cost: proportional_to_remaining, capture_progress_kept: false }
+
+push:
+  speed_m_per_h: 4
+  pot_ap_per_m: 8
+  contribution_ap: 3
+  min_pushers: 6
+  pot_empty: stops
+  crush_units_per_extra_pusher: 2
+  crush: kills

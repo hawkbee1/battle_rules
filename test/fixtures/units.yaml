@@ -1,0 +1,119 @@
+# Test fixture: a small valid units file. Numbers are fixture values, not game data.
+version: 3
+
+units:
+  commander:
+    category: commander
+    movement_class: foot
+    armor_type: infantry
+    hit_box_m: { width: 0.5, length: 0.5, height: 2 }
+    base: { weight: 1, hp: 100, ap_max: 20, ap_per_m: 1, attack: 10, defense: 10, move_speed: 4, vision_range: 100 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [capture, push]
+    role: { aura_radius: 25 }
+    permadeath: false
+  engineer:
+    category: engineer
+    movement_class: foot
+    armor_type: infantry
+    hit_box_m: { width: 0.5, length: 0.5, height: 2 }
+    base: { weight: 1, hp: 80, ap_max: 20, ap_per_m: 1, attack: 5, defense: 5, move_speed: 3, vision_range: 90 }
+    weapons: { default: rifle, allowed: [rifle, charge] }
+    actions: [build, repair]
+    role: { build: [wall, bridge], repair: true }
+  scout:
+    category: scout
+    movement_class: foot
+    armor_type: infantry
+    hit_box_m: { width: 0.5, length: 0.5, height: 2 }
+    base: { weight: 1, hp: 60, ap_max: 20, ap_per_m: 1, attack: 5, defense: 8, move_speed: 6, vision_range: 200 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [observe]
+    role: { reports_to_radio: true, observe: { vision_bonus_m: 20, duration_s: 600, ap: 8, can_move: false } }
+  medic:
+    category: soldier
+    movement_class: foot
+    armor_type: infantry
+    hit_box_m: { width: 0.5, length: 0.5, height: 2 }
+    base: { weight: 1, hp: 70, ap_max: 20, ap_per_m: 1, attack: 4, defense: 3, move_speed: 4, vision_range: 90 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [heal]
+    role: { heal: 15, heal_ap: 6, earns_money_when_healing: true }
+  radio:
+    category: radio
+    movement_class: tracked
+    armor_type: structure
+    hit_box_m: { width: 3, length: 5, height: 3 }
+    base: { weight: 9, hp: 200, ap_max: 20, ap_per_m: 0.5, attack: 0, defense: 0, move_speed: 3, vision_range: 70 }
+    weapons: { default: null, allowed: [] }
+    actions: []
+    role: { relay_range: 120, shares_with: all_sections_of_team, transportable: false }
+    purchasable_by: commander
+  camp:
+    category: encampment
+    owner: guild_commander
+    counts_in_section_cap: false
+    storable: false
+    movement_class: tracked
+    armor_type: structure
+    hit_box_m: { width: 8, length: 10, height: 4 }
+    base: { weight: 40, hp: 300, ap_max: 20, ap_per_m: 0.5, attack: 0, defense: 0, move_speed: 1, vision_range: 40 }
+    weapons: { default: null, allowed: [] }
+  jeep:
+    category: vehicle
+    movement_class: wheeled
+    armor_type: light_vehicle
+    hit_box_m: { width: 2, length: 4, height: 2 }
+    base: { weight: 4, hp: 150, ap_max: 20, ap_per_m: 0.25, attack: 8, defense: 6, move_speed: 25, vision_range: 120 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [capture, push]
+  tank:
+    category: vehicle
+    movement_class: tracked
+    armor_type: heavy_vehicle
+    hit_box_m: { width: 3, length: 7, height: 2.5 }
+    base: { weight: 12, hp: 500, ap_max: 20, ap_per_m: 0.5, attack: 9, defense: 1, move_speed: 12, vision_range: 110 }
+    weapons: { default: cannon, allowed: [cannon] }
+    actions: [capture]
+  helicopter:
+    category: vehicle
+    movement_class: wheeled
+    capabilities: [flying]
+    flying: { land_time_s: 6, take_off_time_s: 7 }
+    armor_type: light_vehicle
+    hit_box_m: { width: 3, length: 12, height: 4 }
+    base: { weight: 6, hp: 180, ap_max: 20, ap_per_m: 0.25, attack: 9, defense: 9, move_speed: 25, vision_range: 250 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [capture]
+  boat:
+    category: transport
+    movement_class: null
+    capabilities: [sail]
+    armor_type: light_vehicle
+    hit_box_m: { width: 3, length: 8, height: 2 }
+    base: { weight: 6, hp: 180, ap_max: 20, ap_per_m: 0.25, attack: 7, defense: 4, move_speed: 12, vision_range: 130 }
+    weapons: { default: rifle, allowed: [rifle] }
+    actions: [capture]
+    role: { max_total_weight: 4, max_unit_weight: 2 }
+
+progression:
+  xp_sources: { hit: 1, kill: 10, role_action: 3, capture: 40, near_commander_per_min: 2 }
+  target_scaling: { cap: 2.5 }
+  diminishing: { window_s: 300, factor_per_repeat: 0.25 }
+  friendly_hits_give_xp: false
+  victory_xp: 4
+  section_xp_share: 0.1
+  section_size: { cap_at_level_1: 4, extra_unit_every_levels: 3, max_units_factor: 2 }
+  guild_creation_min_level: 3
+  commander_levels:
+    max_level: 4
+    section_xp: [0, 100, 300, 600]
+
+trees:
+  stat_cap_of_base: 2.0
+  default:
+    stats: [hp, attack]
+    step_bonus: 0.25
+    cost_base: 50
+  overrides:
+    radio: { extra_stats: [relay_range] }

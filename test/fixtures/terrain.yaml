@@ -1,0 +1,52 @@
+# Test fixture: a small valid terrain file. Numbers are fixture values, not game data.
+version: 2
+movement_classes: [foot, wheeled, tracked]
+flying_max_above_highest_terrain_m: 15
+
+slope:
+  foot:    { factor: 0.04, max_degrees: 40, min_multiplier: 0.6 }
+  wheeled: { factor: 0.08, max_degrees: 20, min_multiplier: 0.6 }
+  tracked: { factor: 0.06, max_degrees: 30, min_multiplier: 0.6 }
+  flying:  { factor: 0, max_degrees: 90, min_multiplier: 1 }
+  sail:    { factor: 0, max_degrees: 90, min_multiplier: 1 }
+  push:    { factor: 0.06, max_degrees: 30, min_multiplier: 0.6 }
+
+vision:
+  height_bonus_m_per_m: 1.5
+  height_bonus_max_m: 100
+  forest_vision_cost_per_m: 3
+  destroyed_objects_block: false
+
+weather:
+  clear: { vision_factor: 1 }
+  fog:   { vision_factor: 0.5 }
+
+terrain:
+  grass:
+    blocks_los: false
+    vision_factor: 1
+    ap_multiplier: { foot: 1, wheeled: 1, tracked: 1, flying: 0.5, sail: null, push: 1 }
+  mountain:
+    blocks_los: true
+    vision_factor: 1
+    ap_multiplier: { foot: 2.5, wheeled: null, tracked: null, flying: 0.5, sail: null, push: null }
+  lake:
+    blocks_los: false
+    vision_factor: 1
+    ap_multiplier: { foot: null, wheeled: null, tracked: null, flying: 0.5, sail: 0.75, push: null }
+    crossable_by: [sail]
+  island:
+    blocks_los: false
+    vision_factor: 0.9
+    ap_multiplier: { foot: 1, wheeled: 1, tracked: 1, flying: 0.5, sail: null, push: 1 }
+    access: [flying, ladder]
+
+craters:
+  max_depth_m: 12
+  fillable_by_engineers: false
+
+objects:
+  tree:   { armor_type: structure, blocks_los: false, conceals: forest, destructible: true, hp: 80 }
+  wall:   { armor_type: structure, blocks_los: true, destructible: true, hp: 150, built_by: engineer, ap: 7, build_time_s: 200 }
+  bridge: { armor_type: structure, blocks_los: false, destructible: true, hp: 160, built_by: engineer, relic_crossable: false, ap: 9, build_time_s: 250 }
+  trap:   { armor_type: structure, blocks_los: false, destructible: true, hp: 30, hidden_from_enemies: true }
