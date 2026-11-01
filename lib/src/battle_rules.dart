@@ -1,5 +1,5 @@
 /// {@template battle_rules}
-/// Headless rules core of Battle Team (AP, movement, vision, combat), pure Dart.
+/// Entry point of the Battle Team rules core.
 /// {@endtemplate}
 class BattleRules {
   /// {@macro battle_rules}
