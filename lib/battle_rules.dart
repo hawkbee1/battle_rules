@@ -4,4 +4,12 @@
 /// (`apps/battle_team/plan/data/` in the hawkbee checkout) and the time.
 library;
 
-export 'src/battle_rules.dart';
+export 'src/data/battle_settings.dart' hide battleFile;
+export 'src/data/combat_data.dart' hide combatFile;
+export 'src/data/economy_data.dart' hide economyFile;
+export 'src/data/game_data.dart';
+export 'src/data/game_data_exception.dart';
+export 'src/data/hit_box.dart' show HitBox;
+export 'src/data/medals_data.dart' hide medalsFile;
+export 'src/data/terrain_data.dart' hide terrainFile;
+export 'src/data/units_data.dart' hide unitsFile;
