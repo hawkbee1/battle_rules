@@ -16,3 +16,4 @@ export 'src/data/hit_box.dart' show HitBox;
 export 'src/data/medals_data.dart';
 export 'src/data/terrain_data.dart' hide terrainFile;
 export 'src/data/units_data.dart' hide unitsFile;
+export 'src/movement/movement_cost.dart';

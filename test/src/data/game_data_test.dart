@@ -68,7 +68,7 @@ void main() {
 
       expect(data.units.unitTypes, hasLength(10));
       expect(data.combat.weaponTypes, hasLength(3));
-      expect(data.terrain.terrainTypes, hasLength(4));
+      expect(data.terrain.terrainTypes, hasLength(6));
       expect(data.battle.ap.max, 20);
       expect(data.economy.currency, 'w€');
       expect(data.medals.tiers, hasLength(3));

@@ -40,6 +40,14 @@ terrain:
     vision_factor: 0.9
     ap_multiplier: { foot: 1, wheeled: 1, tracked: 1, flying: 0.5, sail: null, push: 1 }
     access: [flying, ladder]
+  mud:
+    blocks_los: false
+    vision_factor: 1
+    ap_multiplier: { foot: 2, wheeled: 4, tracked: 2, flying: 0.5, sail: null, push: 3 }
+  road:
+    blocks_los: false
+    vision_factor: 1
+    ap_multiplier: { foot: 0.75, wheeled: 0.25, tracked: 0.5, flying: 0.5, sail: null, push: 0.5 }
 
 craters:
   max_depth_m: 12
