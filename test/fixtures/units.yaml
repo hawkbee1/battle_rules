@@ -63,7 +63,7 @@ units:
     category: vehicle
     movement_class: wheeled
     armor_type: light_vehicle
-    hit_box_m: { width: 2, length: 4, height: 2 }
+    hit_box_m: { width: 2, length: 4, height: 1.5 }
     base: { weight: 4, hp: 150, ap_max: 20, ap_per_m: 0.25, attack: 8, defense: 6, move_speed: 25, vision_range: 120 }
     weapons: { default: rifle, allowed: [rifle] }
     actions: [capture, push]

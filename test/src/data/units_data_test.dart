@@ -36,7 +36,7 @@ void main() {
       expect(jeep.armorType, 'light_vehicle');
       expect(
         [jeep.hitBox.width, jeep.hitBox.length, jeep.hitBox.height],
-        [2, 4, 2],
+        [2, 4, 1.5],
       );
       final stats = jeep.stats;
       expect(stats.weight, 4);

@@ -4,7 +4,7 @@ version: 4
 armor_types: [infantry, light_vehicle, heavy_vehicle, structure]
 
 weapon_types:
-  rifle:  { base_damage: 10, range_m: 300, ap_per_shot: 2, base_accuracy: 0.6, rate_of_fire_rpm: 30, magazine_capacity: 8, reload_time_s: 2, unload_time_s: 1, move_while_loaded: true, projectile_speed_mps: 800, airborne_factor: 0.25 }
+  rifle:  { base_damage: 10, range_m: 300, ap_per_shot: 2, base_accuracy: 0.6, rate_of_fire_rpm: 30, magazine_capacity: 8, reload_time_s: 3, unload_time_s: 1, move_while_loaded: true, projectile_speed_mps: 800, airborne_factor: 0.25 }
   cannon: { base_damage: 50, range_m: 900, ap_per_shot: 12, base_accuracy: 0.3, rate_of_fire_rpm: 3, magazine_capacity: 1, reload_time_s: 9, unload_time_s: 20, move_while_loaded: false, airborne_factor: 0, splash_radius_m: 6, deforms_terrain: true, indirect_fire: true }
   charge: { base_damage: 70, range_m: 4, ap_per_shot: 15, rate_of_fire_rpm: 1, magazine_capacity: 1, reload_time_s: 8, unload_time_s: 4, move_while_loaded: true, airborne_factor: 0, splash_radius_m: 3, never_misses: true }
 
@@ -34,7 +34,7 @@ morale:
     nearby_enemy_killed: +4
     nearby_ally_killed: -6
     outnumbered_per_min: -2
-  nearby_radius_m: 40
+  nearby_radius_m: 45
   outnumbered_ratio: 2
 
 zero_hp:

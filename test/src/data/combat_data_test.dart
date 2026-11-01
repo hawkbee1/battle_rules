@@ -31,7 +31,7 @@ void main() {
       expect(rifle.baseAccuracy, 0.6);
       expect(rifle.rateOfFireRpm, 30);
       expect(rifle.magazineCapacity, 8);
-      expect(rifle.reloadTimeS, 2);
+      expect(rifle.reloadTimeS, 3);
       expect(rifle.unloadTimeS, 1);
       expect(rifle.moveWhileLoaded, isTrue);
       expect(rifle.projectileSpeedMps, 800);
@@ -83,7 +83,7 @@ void main() {
       expect(morale.events.nearbyEnemyKilled, 4);
       expect(morale.events.nearbyAllyKilled, -6);
       expect(morale.events.outnumberedPerMin, -2);
-      expect(morale.nearbyRadiusM, 40);
+      expect(morale.nearbyRadiusM, 45);
       expect(morale.outnumberedRatio, 2);
     });
 
