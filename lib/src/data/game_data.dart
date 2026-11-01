@@ -7,15 +7,13 @@ import 'package:battle_rules/src/data/medals_data.dart';
 import 'package:battle_rules/src/data/terrain_data.dart';
 import 'package:battle_rules/src/data/units_data.dart';
 
-/// {@template game_data}
-/// Every game data file, parsed and checked.
+/// Every game data file, parsed and checked. [GameData.parse] is the only
+/// way to get one.
 ///
 /// Flyweight (stack decision 7): one instance holds the unit, weapon and
 /// terrain definitions that every unit of every battle shares.
-/// {@endtemplate}
 final class GameData {
-  /// {@macro game_data}
-  const new({
+  const new _({
     required this.units,
     required this.combat,
     required this.terrain,
@@ -38,7 +36,7 @@ final class GameData {
     required String economy,
     required String medals,
   }) {
-    final data = GameData(
+    final data = GameData._(
       units: UnitsData.parse(units),
       combat: CombatData.parse(combat),
       terrain: TerrainData.parse(terrain),
@@ -46,7 +44,12 @@ final class GameData {
       economy: EconomyData.parse(economy),
       medals: MedalsData.parse(medals),
     );
-    validateGameData(data);
+    validateGameData(
+      units: data.units,
+      combat: data.combat,
+      terrain: data.terrain,
+      battle: data.battle,
+    );
     return data;
   }
 

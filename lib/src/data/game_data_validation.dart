@@ -1,33 +1,37 @@
 import 'package:battle_rules/src/data/battle_settings.dart';
 import 'package:battle_rules/src/data/combat_data.dart';
-import 'package:battle_rules/src/data/game_data.dart';
 import 'package:battle_rules/src/data/game_data_exception.dart';
 import 'package:battle_rules/src/data/terrain_data.dart';
 import 'package:battle_rules/src/data/units_data.dart';
 
 /// The unit type whose base speed caps every flying unit's (decision 174).
-const flyingSpeedReference = 'jeep';
+const _flyingSpeedReference = 'jeep';
 
 /// The unit type whose base speed caps every sailing unit's (decision 174).
-const sailingSpeedReference = 'tank';
+const _sailingSpeedReference = 'tank';
 
 /// Checks the rules between the values of the game data files (M4 Issue 2).
 ///
 /// Throws a [GameDataException] naming the file, the key and the value of
 /// the first problem found.
-void validateGameData(GameData data) {
-  _checkUnitArmorTypes(data);
-  _checkWeaponLoadouts(data);
-  _checkDamageTable(data.combat);
-  _checkSizeFactors(data.combat);
-  _checkTerrainColumns(data.terrain);
-  _checkSlopeRows(data.terrain);
-  _checkApMax(data);
-  _checkProjectileSpeeds(data.combat);
-  _checkSpeedCaps(data.units);
-  _checkCommanderLevels(data.units.progression.commanderLevels);
-  _checkObjectArmorTypes(data);
-  _checkUpFrontAp(data);
+void validateGameData({
+  required UnitsData units,
+  required CombatData combat,
+  required TerrainData terrain,
+  required BattleSettings battle,
+}) {
+  _checkArmorTypes(units, terrain, combat.armorTypes);
+  _checkWeaponLoadouts(units, combat);
+  _checkDamageTable(combat);
+  _checkSizeFactors(combat);
+  _checkMovementClasses(units, terrain);
+  _checkTerrainColumns(terrain);
+  _checkSlopeRows(terrain);
+  _checkApMax(units, battle.ap.max);
+  _checkProjectileSpeeds(combat);
+  _checkSpeedCaps(units);
+  _checkCommanderLevels(units.progression.commanderLevels);
+  _checkUpFrontAp(units, combat, terrain, battle);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -40,25 +44,36 @@ Never _fail(String file, String key, Object? value, String problem) =>
 
 String _list(Iterable<String> names) => '[${names.join(', ')}]';
 
-/// COMBAT-20: every unit's armor type is one of `combat.yaml` armor_types.
-void _checkUnitArmorTypes(GameData data) {
-  final armorTypes = data.combat.armorTypes;
-  for (final unit in data.units.unitTypes.values) {
-    if (!armorTypes.contains(unit.armorType)) {
+/// COMBAT-20, MAP-40: every unit's and every object's armor type is one of
+/// `combat.yaml` armor_types.
+void _checkArmorTypes(
+  UnitsData units,
+  TerrainData terrain,
+  List<String> armorTypes,
+) {
+  void check(String file, String key, String armorType) {
+    if (!armorTypes.contains(armorType)) {
       _fail(
-        unitsFile,
-        'units.${unit.id}.armor_type',
-        unit.armorType,
+        file,
+        key,
+        armorType,
         'not in $combatFile armor_types ${_list(armorTypes)}',
       );
     }
+  }
+
+  for (final unit in units.unitTypes.values) {
+    check(unitsFile, 'units.${unit.id}.armor_type', unit.armorType);
+  }
+  for (final object in terrain.objects.values) {
+    check(terrainFile, 'objects.${object.id}.armor_type', object.armorType);
   }
 }
 
 /// UNIT-03: the default weapon is null (unarmed, nothing allowed) or one of
 /// the allowed weapons, and every allowed weapon exists.
-void _checkWeaponLoadouts(GameData data) {
-  for (final unit in data.units.unitTypes.values) {
+void _checkWeaponLoadouts(UnitsData units, CombatData combat) {
+  for (final unit in units.unitTypes.values) {
     final WeaponLoadout(:defaultWeapon, :allowed) = unit.weapons;
     final key = 'units.${unit.id}.weapons';
     if (defaultWeapon == null && allowed.isNotEmpty) {
@@ -78,7 +93,7 @@ void _checkWeaponLoadouts(GameData data) {
       );
     }
     for (final (index, weapon) in allowed.indexed) {
-      if (!data.combat.weaponTypes.containsKey(weapon)) {
+      if (!combat.weaponTypes.containsKey(weapon)) {
         _fail(
           unitsFile,
           '$key.allowed[$index]',
@@ -105,11 +120,29 @@ void _checkDamageTable(CombatData combat) {
   }
 }
 
-/// `hit_chance.size_factor` covers every armor type.
+/// COMBAT-15: `hit_chance.size_factor` covers every armor type.
 void _checkSizeFactors(CombatData combat) {
   for (final armor in combat.armorTypes) {
     if (!combat.hitChance.sizeFactor.containsKey(armor)) {
       _fail(combatFile, 'hit_chance.size_factor.$armor', null, 'missing');
+    }
+  }
+}
+
+/// MAP-15: every unit's ground movement class is one of `terrain.yaml`
+/// movement_classes, so its `ap_multiplier` column exists.
+void _checkMovementClasses(UnitsData units, TerrainData terrain) {
+  for (final unit in units.unitTypes.values) {
+    final movementClass = unit.movementClass;
+    if (movementClass != null &&
+        !terrain.movementClasses.contains(movementClass)) {
+      _fail(
+        unitsFile,
+        'units.${unit.id}.movement_class',
+        movementClass,
+        'not in $terrainFile movement_classes '
+            '${_list(terrain.movementClasses)}',
+      );
     }
   }
 }
@@ -140,11 +173,10 @@ void _checkSlopeRows(TerrainData terrain) {
   }
 }
 
-/// Decision 167: every unit's `ap_max` is the one AP maximum, `battle.yaml`
-/// `ap.max`.
-void _checkApMax(GameData data) {
-  final max = data.battle.ap.max;
-  for (final unit in data.units.unitTypes.values) {
+/// COMBAT-01, decision 167: every unit's `ap_max` is the one AP maximum,
+/// `battle.yaml` `ap.max`.
+void _checkApMax(UnitsData units, double max) {
+  for (final unit in units.unitTypes.values) {
     if (unit.stats.apMax != max) {
       _fail(
         unitsFile,
@@ -156,8 +188,8 @@ void _checkApMax(GameData data) {
   }
 }
 
-/// Decision 183: every weapon that flies a first-person shot has a
-/// projectile speed; indirect fire and a weapon that never misses do not.
+/// COMBAT-14, decision 183: every weapon that flies a first-person shot has
+/// a projectile speed; indirect fire and a weapon that never misses do not.
 void _checkProjectileSpeeds(CombatData combat) {
   for (final weapon in combat.weaponTypes.values) {
     if (!weapon.indirectFire &&
@@ -176,35 +208,28 @@ void _checkProjectileSpeeds(CombatData combat) {
 /// Decisions 174, 178: a flying unit's base speed is at most the jeep's, a
 /// sailing unit's at most the tank's.
 void _checkSpeedCaps(UnitsData units) {
-  UnitType reference(String id) =>
-      units.unitTypes[id] ??
-      _fail(
-        unitsFile,
-        'units.$id',
-        null,
-        'missing: it caps the base speed of other units (decision 174)',
-      );
-  final flyingCap = reference(flyingSpeedReference).stats.moveSpeed;
-  final sailingCap = reference(sailingSpeedReference).stats.moveSpeed;
-  for (final unit in units.unitTypes.values) {
-    final speed = unit.stats.moveSpeed;
-    if (unit.canFly && speed > flyingCap) {
-      _fail(
-        unitsFile,
-        'units.${unit.id}.base.move_speed',
-        speed,
-        'a flying unit is not faster than the $flyingSpeedReference '
-            '($flyingCap)',
-      );
-    }
-    if (unit.canSail && speed > sailingCap) {
-      _fail(
-        unitsFile,
-        'units.${unit.id}.base.move_speed',
-        speed,
-        'a sailing unit is not faster than the $sailingSpeedReference '
-            '($sailingCap)',
-      );
+  final caps = [
+    ('flying', (UnitType unit) => unit.canFly, _flyingSpeedReference),
+    ('sailing', (UnitType unit) => unit.canSail, _sailingSpeedReference),
+  ];
+  for (final (kind, applies, reference) in caps) {
+    final cap =
+        units.unitTypes[reference]?.stats.moveSpeed ??
+        _fail(
+          unitsFile,
+          'units.$reference',
+          null,
+          'missing: it caps the base speed of other units (decision 174)',
+        );
+    for (final unit in units.unitTypes.values.where(applies)) {
+      if (unit.stats.moveSpeed > cap) {
+        _fail(
+          unitsFile,
+          'units.${unit.id}.base.move_speed',
+          unit.stats.moveSpeed,
+          'a $kind unit is not faster than the $reference ($cap)',
+        );
+      }
     }
   }
 }
@@ -233,28 +258,17 @@ void _checkCommanderLevels(CommanderLevels levels) {
   }
 }
 
-/// MAP-40: every terrain object's armor type is one of `combat.yaml`
-/// armor_types.
-void _checkObjectArmorTypes(GameData data) {
-  final armorTypes = data.combat.armorTypes;
-  for (final object in data.terrain.objects.values) {
-    if (!armorTypes.contains(object.armorType)) {
-      _fail(
-        terrainFile,
-        'objects.${object.id}.armor_type',
-        object.armorType,
-        'not in $combatFile armor_types ${_list(armorTypes)}',
-      );
-    }
-  }
-}
-
 /// UNIT-38, decision 132: no action a unit lists costs more AP up front
 /// than its `ap_max`.
-void _checkUpFrontAp(GameData data) {
-  for (final unit in data.units.unitTypes.values) {
+void _checkUpFrontAp(
+  UnitsData units,
+  CombatData combat,
+  TerrainData terrain,
+  BattleSettings battle,
+) {
+  for (final unit in units.unitTypes.values) {
     for (final action in unit.actions) {
-      final ap = _upFrontAp(data, unit, action);
+      final ap = _upFrontAp(unit, action, combat, terrain, battle);
       if (ap > unit.stats.apMax) {
         _fail(
           unitsFile,
@@ -270,19 +284,25 @@ void _checkUpFrontAp(GameData data) {
 /// The AP [unit] pays up front for [action] (COMBAT-07, COMBAT-08): a
 /// contribution to a capture or push pot, the repair AP, the healer's and
 /// the scout's role AP, and the dearest construction it builds.
-double _upFrontAp(GameData data, UnitType unit, UnitAction action) {
+double _upFrontAp(
+  UnitType unit,
+  UnitAction action,
+  CombatData combat,
+  TerrainData terrain,
+  BattleSettings battle,
+) {
   final key = 'units.${unit.id}.role';
   return switch (action) {
-    UnitAction.capture => data.battle.capture.contributionAp,
-    UnitAction.push => data.combat.push.contributionAp,
-    UnitAction.repair => data.combat.actions.repair.ap,
+    UnitAction.capture => battle.capture.contributionAp,
+    UnitAction.push => combat.push.contributionAp,
+    UnitAction.repair => combat.actions.repair.ap,
     UnitAction.heal =>
       unit.role.healAp ??
           _fail(unitsFile, '$key.heal_ap', null, 'missing: it lists heal'),
     UnitAction.observe =>
       unit.role.observe?.ap ??
           _fail(unitsFile, '$key.observe', null, 'missing: it lists observe'),
-    UnitAction.build => _dearestConstruction(data.terrain, unit, key),
+    UnitAction.build => _dearestConstruction(terrain, unit, key),
   };
 }
 

@@ -1,7 +1,7 @@
 import 'package:battle_rules/src/data/data_reader.dart';
 
 /// The name of the economy data file in messages.
-const economyFile = 'economy.yaml';
+const _economyFile = 'economy.yaml';
 
 /// {@template economy_data}
 /// The `economy.yaml` game data file: currency, prices, earnings and
@@ -24,7 +24,7 @@ final class EconomyData {
 
   /// Parses the text of `economy.yaml`.
   factory parse(String text) {
-    final reader = DataReader.parse(economyFile, text);
+    final reader = DataReader.parse(_economyFile, text);
     final prices = reader.map('prices');
     final earnings = reader.map('earnings');
     final fees = reader.map('transfer_fees');

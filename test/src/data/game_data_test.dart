@@ -22,7 +22,9 @@ void main() {
     });
 
     test('loads without error', () {
-      expect(parsePlanData, returnsNormally);
+      expect(data.units.unitTypes, isNotEmpty);
+      expect(data.combat.weaponTypes, isNotEmpty);
+      expect(data.terrain.terrainTypes, isNotEmpty);
     });
 
     test("keeps each file's version", () {
@@ -166,7 +168,7 @@ void main() {
         );
       });
 
-      test('rejects a size factor table missing an armor type', () {
+      test('COMBAT-15 rejects a size factor table missing an armor type', () {
         expect(
           () => parseFixtures(
             combat: {
@@ -200,6 +202,25 @@ void main() {
         );
       });
 
+      test('MAP-15 rejects a unit movement class not in movement_classes', () {
+        expect(
+          () => parseFixtures(
+            units: {
+              'movement_class: wheeled\n    armor_type: light_vehicle\n'
+                      '    hit_box_m: { width: 2,':
+                  'movement_class: wheel\n    armor_type: light_vehicle\n'
+                  '    hit_box_m: { width: 2,',
+            },
+          ),
+          throwsDataError(
+            'units.yaml',
+            'units.jeep.movement_class',
+            'wheel',
+            'not in terrain.yaml movement_classes [foot, wheeled, tracked]',
+          ),
+        );
+      });
+
       test('MAP-21 rejects a movement profile without a slope row', () {
         expect(
           () => parseFixtures(
@@ -213,7 +234,7 @@ void main() {
         );
       });
 
-      test('decisions 169, 181 reject a unit without ap_per_m', () {
+      test('COMBAT-03 rejects a unit without ap_per_m', () {
         expect(
           () => parseFixtures(units: {'ap_per_m: 0.5, attack: 9': 'attack: 9'}),
           throwsDataError(
@@ -259,7 +280,7 @@ void main() {
         );
       });
 
-      test('decision 174 needs the jeep and the tank as speed caps', () {
+      test('decision 174 needs the jeep as the flying speed cap', () {
         expect(
           () => parseFixtures(units: {'  jeep:\n': '  car:\n'}),
           throwsDataError(
@@ -269,6 +290,9 @@ void main() {
             'it caps the base speed of other units',
           ),
         );
+      });
+
+      test('decision 174 needs the tank as the sailing speed cap', () {
         expect(
           () => parseFixtures(units: {'  tank:\n': '  heavy:\n'}),
           throwsDataError(
@@ -282,7 +306,7 @@ void main() {
     });
 
     group('AP maximum and hit volumes', () {
-      test("decision 167 rejects a unit's ap_max other than ap.max", () {
+      test("COMBAT-01 rejects a unit's ap_max other than ap.max", () {
         expect(
           () => parseFixtures(
             units: {
@@ -299,7 +323,7 @@ void main() {
         );
       });
 
-      test('decision 167 checks every unit against battle.yaml ap.max', () {
+      test('COMBAT-01 checks every unit against battle.yaml ap.max', () {
         expect(
           () => parseFixtures(battle: {'ap:\n  max: 20': 'ap:\n  max: 25'}),
           throwsDataError(
@@ -311,7 +335,7 @@ void main() {
         );
       });
 
-      test('decision 183 rejects a unit without a hit box', () {
+      test('COMBAT-14 rejects a unit without a hit box', () {
         expect(
           () => parseFixtures(
             units: {
@@ -327,7 +351,7 @@ void main() {
         );
       });
 
-      test('decision 183 rejects an HQ without a hit box', () {
+      test('HQ-22 rejects an HQ without a hit box', () {
         expect(
           () => parseFixtures(
             battle: {'  hit_box_m: { width: 15, length: 18, height: 6 }\n': ''},
@@ -336,7 +360,7 @@ void main() {
         );
       });
 
-      test('decision 183 rejects a direct-fire weapon without a projectile '
+      test('COMBAT-14 rejects a direct-fire weapon without a projectile '
           'speed', () {
         expect(
           () => parseFixtures(combat: {'projectile_speed_mps: 800, ': ''}),
@@ -412,6 +436,15 @@ void main() {
             'unknown, expected one of capture, push, build, repair, heal, '
                 'observe',
           ),
+        );
+      });
+
+      test('UNIT-38 accepts an action that costs exactly ap_max', () {
+        expect(
+          () => parseFixtures(
+            battle: {'contribution_ap: 4': 'contribution_ap: 20'},
+          ),
+          returnsNormally,
         );
       });
 
@@ -554,6 +587,9 @@ void main() {
             'not a construction of terrain.yaml objects',
           ),
         );
+      });
+
+      test('UNIT-38 rejects a build of an unknown object', () {
         expect(
           () => parseFixtures(
             units: {'build: [wall, bridge]': 'build: [tower, bridge]'},

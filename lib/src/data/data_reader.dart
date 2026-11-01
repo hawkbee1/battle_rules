@@ -43,8 +43,10 @@ final class DataReader {
 
   final Map<Object?, Object?> _map;
 
-  /// The keys of this map, in file order.
-  Iterable<String> get keys => _map.keys.map((key) => '$key');
+  /// The keys of this map, in file order. Every key must be a string.
+  Iterable<String> get keys => _map.keys.map(
+    (key) => key is String ? key : fail('$key', key, 'a key must be a string'),
+  );
 
   /// Whether this map has [key], even with a null value.
   bool has(String key) => _map.containsKey(key);

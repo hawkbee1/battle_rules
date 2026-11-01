@@ -1,7 +1,7 @@
 import 'package:battle_rules/src/data/data_reader.dart';
 
 /// The name of the medals data file in messages.
-const medalsFile = 'medals.yaml';
+const _medalsFile = 'medals.yaml';
 
 /// {@template medals_data}
 /// The `medals.yaml` game data file: medal tiers, their points and the
@@ -20,7 +20,7 @@ final class MedalsData {
 
   /// Parses the text of `medals.yaml`.
   factory parse(String text) {
-    final reader = DataReader.parse(medalsFile, text);
+    final reader = DataReader.parse(_medalsFile, text);
     final actions = reader.map('actions');
     return MedalsData(
       version: reader.integer('version'),

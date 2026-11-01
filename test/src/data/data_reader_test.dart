@@ -23,6 +23,7 @@ bad_values: [1, x]
 tally: { a: 1, b: 2 }
 weights: { a: 1, b: 0.5 }
 gaps: { a: 1, b: null }
+numbered: { 1: a }
 ''';
 
 DataReader _reader() => DataReader.parse('sample.yaml', _sample);
@@ -67,6 +68,18 @@ void main() {
       expect(reader.has('absent'), isFalse);
     });
 
+    test('keys rejects a key that is not a string', () {
+      expect(
+        () => _reader().map('numbered').keys.toList(),
+        throwsDataError(
+          'sample.yaml',
+          'numbered.1',
+          1,
+          'a key must be a string',
+        ),
+      );
+    });
+
     test('keyPath joins nested keys with dots', () {
       final reader = _reader();
 
@@ -106,6 +119,10 @@ void main() {
         expect(reader.optionalMap('absent'), isNull);
         expect(reader.optionalMap('nothing'), isNull);
         expect(reader.optionalMap('box')?.integer('side'), 1);
+        expect(
+          () => reader.optionalMap('count'),
+          throwsDataError('sample.yaml', 'count', 3, 'must be a map'),
+        );
       });
 
       test('maps reads every value as a map', () {
@@ -145,6 +162,10 @@ void main() {
         expect(reader.optionalNumber('absent'), isNull);
         expect(reader.optionalNumber('nothing'), isNull);
         expect(reader.optionalNumber('ratio'), 0.5);
+        expect(
+          () => reader.optionalNumber('name'),
+          throwsDataError('sample.yaml', 'name', 'alpha', 'must be a number'),
+        );
       });
 
       test('numberOrNull needs the key but accepts null', () {
@@ -174,6 +195,10 @@ void main() {
         expect(reader.optionalString('absent'), isNull);
         expect(reader.optionalString('nothing'), isNull);
         expect(reader.optionalString('name'), 'alpha');
+        expect(
+          () => reader.optionalString('count'),
+          throwsDataError('sample.yaml', 'count', 3, 'must be a string'),
+        );
       });
 
       test('stringOrNull needs the key but accepts null', () {
@@ -203,6 +228,10 @@ void main() {
         expect(reader.optionalBoolean('absent', absent: true), isTrue);
         expect(reader.optionalBoolean('nothing', absent: false), isFalse);
         expect(reader.optionalBoolean('flag', absent: false), isTrue);
+        expect(
+          () => reader.optionalBoolean('name', absent: true),
+          throwsDataError('sample.yaml', 'name', 'alpha', 'true or false'),
+        );
       });
     });
 
@@ -253,7 +282,11 @@ void main() {
       });
 
       test('lists are unmodifiable', () {
-        expect(() => _reader().strings('names').add('c'), throwsA(anything));
+        final reader = _reader();
+
+        expect(() => reader.strings('names').add('c'), throwsUnsupportedError);
+        expect(() => reader.integers('counts').add(3), throwsUnsupportedError);
+        expect(() => reader.numbers('values').add(3), throwsUnsupportedError);
       });
     });
 
@@ -264,6 +297,23 @@ void main() {
 
       test('numberEntries reads every value as a number', () {
         expect(_reader().map('weights').numberEntries(), {'a': 1.0, 'b': 0.5});
+      });
+
+      test('entries are unmodifiable', () {
+        final reader = _reader();
+
+        expect(
+          () => reader.map('tally').integerEntries()['c'] = 3,
+          throwsUnsupportedError,
+        );
+        expect(
+          () => reader.map('weights').numberEntries()['c'] = 3,
+          throwsUnsupportedError,
+        );
+        expect(
+          () => reader.map('gaps').numberOrNullEntries()['c'] = 3,
+          throwsUnsupportedError,
+        );
       });
 
       test('numberOrNullEntries keeps null values', () {
