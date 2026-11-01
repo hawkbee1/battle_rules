@@ -425,6 +425,15 @@ final class SectionSize {
 
   /// Units owned (active and stored) at most, as a multiple of the cap.
   final int maxUnitsFactor;
+
+  /// The cap on active units, the commander included, at commander
+  /// [level] (UNIT-39).
+  int capAt(int level) => capAtLevel1 + (level - 1) ~/ extraUnitEveryLevels;
+
+  /// Whether a section at commander [level] with [activeUnits] on the
+  /// field has room for one more: a defector needs it (UNIT-39).
+  bool hasRoom({required int level, required int activeUnits}) =>
+      activeUnits < capAt(level);
 }
 
 /// {@template commander_levels}
