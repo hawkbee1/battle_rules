@@ -27,6 +27,28 @@ git clone --recurse-submodules https://github.com/hawkbee1/hawkbee.git
 cd hawkbee && flutter pub get
 ```
 
+## Game data
+
+`GameData.parse` takes the text of the six game data files and returns typed,
+immutable models. It checks the types, the required keys and the rules between
+values, and throws a `GameDataException` naming the file, the key and the value
+of the first problem:
+
+```dart
+final data = GameData.parse(
+  units: unitsYaml,
+  combat: combatYaml,
+  terrain: terrainYaml,
+  battle: battleYaml,
+  economy: economyYaml,
+  medals: medalsYaml,
+);
+final rifle = data.combat.weaponTypes['rifle'];
+```
+
+The caller reads the files. `economy.yaml` lives in `plan/milestones/`, the
+other five in `plan/data/`.
+
 ## Specification
 
 The rules live in the Battle Team app repository, mounted in hawkbee at
