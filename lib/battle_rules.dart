@@ -4,6 +4,9 @@
 /// (`apps/battle_team/plan/data/` in the hawkbee checkout) and the time.
 library;
 
+export 'src/ap/activity.dart';
+export 'src/ap/ap_pool.dart';
+export 'src/ap/movement.dart';
 export 'src/data/battle_settings.dart' hide battleFile;
 export 'src/data/combat_data.dart' hide combatFile;
 export 'src/data/economy_data.dart';
