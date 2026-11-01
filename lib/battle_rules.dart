@@ -8,6 +8,7 @@ export 'src/ap/activity.dart';
 export 'src/ap/ap_pool.dart';
 export 'src/ap/movement.dart';
 export 'src/combat/damage.dart';
+export 'src/combat/weapons.dart';
 export 'src/data/battle_settings.dart' hide battleFile;
 export 'src/data/combat_data.dart' hide combatFile;
 export 'src/data/economy_data.dart';
