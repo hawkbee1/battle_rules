@@ -16,6 +16,7 @@ final class BattleSettings {
     required this.ap,
     required this.battleStart,
     required this.teamCount,
+    required this.guildsOffered,
     required this.capture,
     required this.hq,
     required this.victory,
@@ -53,6 +54,7 @@ final class BattleSettings {
         restoreMorale: start.string('restore_morale'),
       ),
       teamCount: reader.map('teams').integer('count'),
+      guildsOffered: reader.map('newcomers').integer('guilds_offered'),
       capture: CaptureSettings(
         durationS: capture.number('duration_s'),
         potAp: capture.number('pot_ap'),
@@ -98,6 +100,10 @@ final class BattleSettings {
 
   /// Number of teams (`teams.count`, decisions 84, 103).
   final int teamCount;
+
+  /// Guilds offered to a newcomer (`newcomers.guilds_offered`, SOC-03,
+  /// SOC-07).
+  final int guildsOffered;
 
   /// Relic capture (decisions 97, 170).
   final CaptureSettings capture;

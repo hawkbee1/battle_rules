@@ -725,5 +725,27 @@ void main() {
         );
       });
     });
+
+    group('teams', () {
+      test('SOC-20 a battle has two teams or more', () {
+        expect(
+          () => parseFixtures(battle: {'  count: 3': '  count: 1'}),
+          throwsDataError('battle.yaml', 'teams.count', 1, 'must be 2 or more'),
+        );
+      });
+
+      test('SOC-03 a newcomer is offered at least one guild', () {
+        expect(
+          () =>
+              parseFixtures(battle: {'guilds_offered: 3': 'guilds_offered: 0'}),
+          throwsDataError(
+            'battle.yaml',
+            'newcomers.guilds_offered',
+            0,
+            'must be 1 or more',
+          ),
+        );
+      });
+    });
   });
 }

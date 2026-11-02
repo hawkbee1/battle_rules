@@ -18,6 +18,9 @@ battle_start:
 teams:
   count: 3
 
+newcomers:
+  guilds_offered: 3
+
 capture:
   duration_s: 900
   pot_ap: 40
