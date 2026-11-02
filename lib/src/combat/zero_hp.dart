@@ -19,22 +19,6 @@ enum ZeroHpOutcome {
   bool get dropsWeapon => this == death;
 }
 
-/// {@template prisoner_storage}
-/// A section's prisoners, by unit id: separate from its unit storage,
-/// unlimited, never counted in storage capacity (COMBAT-43, decision 94).
-/// {@endtemplate}
-final class PrisonerStorage {
-  /// {@macro prisoner_storage}
-  const new([this.prisoners = const []]);
-
-  /// The prisoners' unit ids.
-  final List<String> prisoners;
-
-  /// This storage with [unitId] taken prisoner. There is no limit.
-  PrisonerStorage added(String unitId) =>
-      PrisonerStorage(List.unmodifiable([...prisoners, unitId]));
-}
-
 /// {@template zero_hp_rules}
 /// The outcome of a unit brought to 0 HP, from `combat.yaml` `zero_hp`
 /// (decisions 37f, 72, 131, 149).

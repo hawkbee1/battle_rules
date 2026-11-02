@@ -99,6 +99,14 @@ enum PurchaseRefusal {
   /// The section has no free room for one more unit (ECO-04, decision 130).
   noRoom,
 
+  /// The section is under its 24-hour lock: a bought unit would arrive on
+  /// the field (HQ-35, decision 205).
+  sectionLocked,
+
+  /// An enemy near the section's portal blocks the unit's arrival (HQ-46,
+  /// decision 205).
+  arrivalBlocked,
+
   /// The section's money does not pay the price.
   notEnoughMoney,
 }
@@ -206,12 +214,18 @@ final class MoneyRules {
   /// UNIT-27, HQ-42, HQ-43). The guild camp is bought by the guild chief
   /// ([guildChief]) when his guild has none ([guildHasCamp]); it counts in
   /// no cap. Any other unit is bought by the section's commander and needs
-  /// free room ([hasRoom], from `SectionLevel.hasRoom`). Where it arrives
-  /// is a storage rule (HQ-46).
+  /// free room ([hasRoom], from `SectionLevel.hasRoom`).
+  ///
+  /// The unit arrives next to the section's portal (ECO-07, HQ-46,
+  /// `StorageRules.placeOf`): nothing is bought while the section is
+  /// [locked] or an enemy blocks the arrival ([arrivalBlocked], from
+  /// `StorageRules.blocks`) (decision 205).
   Purchase buyUnit({
     required UnitType type,
     required int money,
     required bool hasRoom,
+    required bool locked,
+    required bool arrivalBlocked,
     bool guildChief = false,
     bool guildHasCamp = false,
   }) {
@@ -222,6 +236,8 @@ final class MoneyRules {
       _ when camp && !guildChief => PurchaseRefusal.notGuildChief,
       _ when camp && guildHasCamp => PurchaseRefusal.campExists,
       _ when type.countsInSectionCap && !hasRoom => PurchaseRefusal.noRoom,
+      _ when locked => PurchaseRefusal.sectionLocked,
+      _ when arrivalBlocked => PurchaseRefusal.arrivalBlocked,
       _ when price > money => PurchaseRefusal.notEnoughMoney,
       _ => null,
     };
