@@ -106,6 +106,7 @@ progression:
   section_xp_share: 0.1
   section_size: { cap_at_level_1: 4, extra_unit_every_levels: 3, max_units_factor: 2 }
   guild_creation_min_level: 3
+  guild_size: { sections_at_level_1: 2, extra_section_every_levels: 2 }
   commander_levels:
     max_level: 4
     section_xp: [0, 100, 300, 600]

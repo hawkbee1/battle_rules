@@ -138,6 +138,8 @@ void main() {
       expect(progression.sectionSize.capAtLevel1, 4);
       expect(progression.sectionSize.extraUnitEveryLevels, 3);
       expect(progression.sectionSize.maxUnitsFactor, 2);
+      expect(progression.guildSize.sectionsAtLevel1, 2);
+      expect(progression.guildSize.extraSectionEveryLevels, 2);
       expect(progression.guildCreationMinLevel, 3);
     });
 

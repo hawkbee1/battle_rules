@@ -39,6 +39,7 @@ void validateGameData({
   _checkUpFrontAp(units, combat, terrain, battle);
   _checkPurchases(units, combat, economy);
   _checkTeams(battle);
+  _checkBattleStart(battle.battleStart);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -208,6 +209,20 @@ void _checkTeams(BattleSettings battle) {
       battle.guildsOffered,
       'must be 1 or more',
     );
+  }
+}
+
+/// UNIT-31, decision 83: every battle starts with full AP and HP and the
+/// base morale; no other value has a rule.
+void _checkBattleStart(BattleStart start) {
+  for (final (key, value, expected) in [
+    ('restore_ap', start.restoreAp, 'full'),
+    ('restore_hp', start.restoreHp, 'full'),
+    ('restore_morale', start.restoreMorale, 'base'),
+  ]) {
+    if (value != expected) {
+      _fail(battleFile, 'battle_start.$key', value, 'must be $expected');
+    }
   }
 }
 

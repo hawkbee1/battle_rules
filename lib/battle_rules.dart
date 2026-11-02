@@ -1,5 +1,5 @@
 /// Headless rules core of Battle Team: AP, movement, vision, combat,
-/// progression, money, storage, teams and victory.
+/// progression, money, storage, teams, victory, wars and guilds.
 ///
 /// Pure Dart with no I/O: the caller passes the YAML text of the game data
 /// (`apps/battle_team/plan/data/` in the hawkbee checkout) and the time.
@@ -43,3 +43,5 @@ export 'src/storage/unit_location.dart';
 export 'src/teams/teams.dart';
 export 'src/victory/victory.dart';
 export 'src/vision/vision.dart';
+export 'src/war/guild.dart';
+export 'src/war/war.dart';
