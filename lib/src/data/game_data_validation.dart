@@ -38,6 +38,7 @@ void validateGameData({
   _checkTrees(units);
   _checkUpFrontAp(units, combat, terrain, battle);
   _checkPurchases(units, combat, economy);
+  _checkTeams(battle);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -191,6 +192,22 @@ void _checkApMax(UnitsData units, double max) {
         'differs from $battleFile ap.max $max',
       );
     }
+  }
+}
+
+/// SOC-20, SOC-03: a battle has two teams or more, and a newcomer is
+/// offered at least one guild.
+void _checkTeams(BattleSettings battle) {
+  if (battle.teamCount < 2) {
+    _fail(battleFile, 'teams.count', battle.teamCount, 'must be 2 or more');
+  }
+  if (battle.guildsOffered < 1) {
+    _fail(
+      battleFile,
+      'newcomers.guilds_offered',
+      battle.guildsOffered,
+      'must be 1 or more',
+    );
   }
 }
 

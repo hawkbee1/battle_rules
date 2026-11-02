@@ -175,8 +175,9 @@ final class StorageRules {
   }
 
   /// Whether an enemy at [nearestEnemyM] metres from a storage place
-  /// blocks deployment and the arrival of new units there: within
-  /// `deploy_block_radius_m` (HQ-36, HQ-46, decision 147). Null: no enemy.
+  /// blocks deployment and the arrival of bought units there: within
+  /// `deploy_block_radius_m` (HQ-36, HQ-46, decision 147). A new section's
+  /// commander is never blocked (decision 210). Null: no enemy.
   bool blocks(double? nearestEnemyM) =>
       nearestEnemyM != null && nearestEnemyM <= _storage.deployBlockRadiusM;
 

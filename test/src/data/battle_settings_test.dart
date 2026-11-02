@@ -23,11 +23,12 @@ void main() {
       expect(battle.ap.recoveryPerHour, 2);
     });
 
-    test('reads the battle start and the team count', () {
+    test('reads the battle start, the team count and the guilds offered', () {
       expect(battle.battleStart.restoreAp, 'full');
       expect(battle.battleStart.restoreHp, 'full');
       expect(battle.battleStart.restoreMorale, 'base');
       expect(battle.teamCount, 3);
+      expect(battle.guildsOffered, 3);
     });
 
     test('reads the capture settings', () {
