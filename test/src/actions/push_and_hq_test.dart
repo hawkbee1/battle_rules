@@ -30,6 +30,7 @@ void main() {
     test('COMBAT-08 a pusher adds contribution_ap to its team push pot', () {
       final added = pushing.contribute(
         unit: units.unitTypes['commander']!,
+        team: 'red',
         pot: const PushPot(owner: 'red', ap: 5),
         pool: _pool(20),
         now: Duration.zero,
@@ -46,6 +47,7 @@ void main() {
         refusal(
           pushing.contribute(
             unit: units.unitTypes['tank']!,
+            team: 'red',
             pot: const PushPot(owner: 'red'),
             pool: _pool(20),
             now: Duration.zero,
@@ -60,12 +62,28 @@ void main() {
         refusal(
           pushing.contribute(
             unit: units.unitTypes['commander']!,
+            team: 'red',
             pot: const PushPot(owner: 'red'),
             pool: _pool(2, max: 2),
             now: Duration.zero,
           ),
         ),
         ActionRefusal.costAboveApMax,
+      );
+    });
+
+    test("RELIC-19 a unit of another team cannot fill the relic's pot", () {
+      expect(
+        refusal(
+          pushing.contribute(
+            unit: units.unitTypes['commander']!,
+            team: 'blue',
+            pot: const PushPot(owner: 'red'),
+            pool: _pool(20),
+            now: Duration.zero,
+          ),
+        ),
+        ActionRefusal.notOwner,
       );
     });
 
@@ -239,6 +257,12 @@ void main() {
         moved.movement.arrivesAt.inMicroseconds,
         closeTo(7 / hq.speedMPerH * Duration.microsecondsPerHour, 1),
       );
+    });
+
+    test('HQ-12 a unit beyond the end of the path does not end the order', () {
+      final moved = move([_sample('grass', 5)], unitAt: 9);
+
+      expect(moved.endedByUnit, isFalse);
     });
 
     test('HQ-10 the HQ moves on its own with the push profile, so a forest '

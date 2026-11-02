@@ -30,6 +30,9 @@ enum ActionRefusal {
   /// Fewer than `min_pushers` push (RELIC-24).
   tooFewPushers,
 
+  /// Only the team that owns a relic pushes it (RELIC-19).
+  notOwner,
+
   /// It costs more AP than the unit's pool can ever hold.
   costAboveApMax,
 }

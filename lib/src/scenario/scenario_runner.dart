@@ -132,7 +132,7 @@ final class _Unit {
 /// The state of one run.
 final class _Run {
   new(this.data, this.scenario)
-    : random = DartSeededRandom(scenario.seed),
+    : random = XorshiftRandom(scenario.seed),
       vision = Vision(data.terrain),
       armory = Armory(data.combat),
       hitChance = HitChance(data.combat),
@@ -375,6 +375,10 @@ final class _Run {
 
   void _move(MoveOrder order, Duration start) {
     final unit = _units[order.unit]!;
+    if (!unit.weapon.canMoveAt(start)) {
+      _log(start, '${order.unit} cannot move: its weapon is loaded');
+      return;
+    }
     final mover = Mover.unit(unit.type, flying: unit.spec.flying);
     final cost = movementCost.ofPath(mover, order.path);
     final movement = movementCost.move(
@@ -413,6 +417,7 @@ final class _Run {
       for (var turn = 0; turn < order.contributions; turn++) {
         final result = pushing.contribute(
           unit: pusher.type,
+          team: pusher.spec.team,
           pot: pot,
           pool: pusher.pool,
           now: start,
@@ -475,11 +480,7 @@ final class _Run {
       target: target.type,
       targetIsEnemy: target.spec.team != attacker.spec.team,
       moraleValue: target.morale,
-      // Orders run one after another, not interleaved: the target's pool
-      // may already be past this time.
-      ap: target.pool.apAt(
-        now > target.pool.updatedAt ? now : target.pool.updatedAt,
-      ),
+      ap: target.pool.apAt(now),
       attackerSectionHasRoom: true,
       random: random,
     );

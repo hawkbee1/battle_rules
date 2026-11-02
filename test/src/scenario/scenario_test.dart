@@ -40,10 +40,10 @@ void main() {
 
       expect(
         report.summary.line,
-        'shots=77 hits=43 damage=215.20 deaths=1 spared=0 crushed=0 '
-        'ap_used=137.00',
+        'shots=90 hits=39 damage=194.40 deaths=0 spared=0 crushed=0 '
+        'ap_used=150.00',
       );
-      expect(report.events.last, 't=31.9s s1 is at 0 HP: death');
+      expect(report.events.last, 't=33.5s j1 fires at s1: miss');
     });
 
     test('artillery with a radio-relayed target', () {
@@ -97,7 +97,7 @@ void main() {
               '  s1: { type: soldier, team: blue, position: 50 }',
           '  - { at_s: 0, order: fire, unit: s1, target: c1, shots: 15 }\n'
               '  - { at_s: 30, order: fire, unit: c1, target: s1, shots: 15 }',
-          seed: 2,
+          seed: 9,
         ),
       );
 
@@ -106,6 +106,21 @@ void main() {
         report.events.last,
         matches(RegExp(r's1 is at 0 HP: (defection|prisoner)$')),
       );
+    });
+
+    test('COMBAT-36 a unit brought to 0 HP by a non-commander dies', () {
+      final report = play(
+        _scenario(
+          '  j1: { type: jeep, team: red, position: 0 }\n'
+              '  j2: { type: jeep, team: red, position: 2 }\n'
+              '  s1: { type: soldier, team: blue, position: 50 }',
+          '  - { at_s: 0, order: fire, unit: j1, target: s1, shots: 30 }\n'
+              '  - { at_s: 0, order: fire, unit: j2, target: s1, shots: 30 }',
+        ),
+      );
+
+      expect(report.summary.deaths, 1);
+      expect(report.events.last, endsWith('s1 is at 0 HP: death'));
     });
 
     test('COMBAT-11 a unit does not fire at what it cannot see', () {
@@ -186,6 +201,30 @@ void main() {
       expect(report.events.first, endsWith('s1 moves 12.0 m for 15.00 AP'));
       expect(report.events.last, 't=60.0s s1 cannot move: impassable');
       expect(report.summary.apUsed, 15);
+    });
+
+    test('a unit with a loaded weapon that forbids moving does not move', () {
+      final report = play(
+        _scenario(
+          '  a1: { type: artillery, team: red, position: 0 }',
+          '  - { at_s: 0, order: move, unit: a1, path: '
+              '[{ terrain: grass, length: 10 }] }',
+        ),
+      );
+
+      expect(report.events, ['t=0.0s a1 cannot move: its weapon is loaded']);
+    });
+
+    test('RELIC-19 a unit of another team cannot push the relic', () {
+      final report = play(
+        _scenario(
+          '  s1: { type: soldier, team: blue, position: 0 }',
+          '  - { at_s: 0, order: push, owner: red, pushers: [s1], '
+              'contributions: 1, path: [{ terrain: grass, length: 1 }] }',
+        ),
+      );
+
+      expect(report.events.first, 't=0.0s s1 cannot push');
     });
 
     test('UNIT-38 a unit that cannot push does not add to the pot', () {

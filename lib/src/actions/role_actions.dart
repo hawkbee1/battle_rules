@@ -66,6 +66,7 @@ final class TimedAction {
   double progressAt(Duration time) {
     final startedAt = this.startedAt;
     if (startedAt == null) return progress;
+    if (duration == Duration.zero) return 1;
     final elapsed = (time - startedAt).inMicroseconds / duration.inMicroseconds;
     return math.min(1, progress + elapsed);
   }

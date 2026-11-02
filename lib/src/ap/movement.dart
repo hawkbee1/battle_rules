@@ -37,16 +37,19 @@ Movement moveAlong({
       'lengthM and apPerM must not be negative, speedMps must be positive',
     );
   }
+  // Paid actions run one after another: a move starts after the last
+  // payment of the pool.
+  final begin = start < pool.updatedAt ? pool.updatedAt : start;
   final cost = lengthM * apPerM;
-  final apAtStart = pool.apAt(start);
+  final apAtStart = pool.apAt(begin);
   final fullSpeedS = lengthM / speedMps;
   final apLimitedS =
       (cost - apAtStart) / pool.recoveryPerHour * Duration.secondsPerHour;
   final seconds = math.max(fullSpeedS, apLimitedS);
   final arrivesAt =
-      start +
+      begin +
       Duration(microseconds: (seconds * Duration.microsecondsPerSecond).ceil());
-  final rest = apAtStart + _hours(arrivesAt - start) * pool.recoveryPerHour;
+  final rest = apAtStart + _hours(arrivesAt - begin) * pool.recoveryPerHour;
   return Movement(
     arrivesAt: arrivesAt,
     pool: pool.withValue(

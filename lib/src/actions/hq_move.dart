@@ -35,7 +35,9 @@ HqMove? moveHq({
   required List<PathSample> path,
   double? unitInPathAtM,
 }) {
-  final route = unitInPathAtM == null ? path : pathUpTo(path, unitInPathAtM);
+  final length = path.fold<double>(0, (sum, sample) => sum + sample.lengthM);
+  final blocked = unitInPathAtM != null && unitInPathAtM < length;
+  final route = blocked ? pathUpTo(path, unitInPathAtM) : path;
   final movement = cost.move(
     mover: Mover.hq(hq),
     pool: pool,
@@ -43,7 +45,7 @@ HqMove? moveHq({
     path: route,
   );
   if (movement == null) return null;
-  return HqMove(movement: movement, endedByUnit: unitInPathAtM != null);
+  return HqMove(movement: movement, endedByUnit: blocked);
 }
 
 /// The first [distanceM] metres of [path].
