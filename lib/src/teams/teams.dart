@@ -130,9 +130,10 @@ final class TeamRules {
   /// The guilds offered to a newcomer in his team, drawn with [random]:
   /// `newcomers.guilds_offered` among those [optedIn], filled with
   /// [others] when fewer opted in; all of them when the team has fewer
-  /// (SOC-03, SOC-07). He picks one and his section joins it as a trainee
-  /// (decision 129). His commander arrives next to its portal, never
-  /// blocked by an enemy (decision 210).
+  /// (SOC-03, SOC-07). Only guilds with room are given: a full guild is
+  /// not offered (`GuildRules.hasRoom`, decision 213). He picks one and his
+  /// section joins it as a trainee (decision 129). His commander arrives
+  /// next to its portal, never blocked by an enemy (decision 210).
   List<String> guildOffer({
     required Iterable<String> optedIn,
     required Iterable<String> others,

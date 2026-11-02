@@ -395,6 +395,7 @@ final class Progression {
     required this.sectionXpShare,
     required this.sectionSize,
     required this.guildCreationMinLevel,
+    required this.guildSize,
     required this.commanderLevels,
   });
 
@@ -421,6 +422,9 @@ final class Progression {
 
   /// Commander level needed to create a guild (decision 155).
   final int guildCreationMinLevel;
+
+  /// The guild size rule (`guild_size`, SOC-47; assumed, Q-SOC-18).
+  final GuildSize guildSize;
 
   /// The level table (`commander_levels`, UNIT-17, decision 144).
   final CommanderLevels commanderLevels;
@@ -503,6 +507,31 @@ final class SectionSize {
   /// field has room for one more: a defector needs it (UNIT-39).
   bool hasRoom({required int level, required int activeUnits}) =>
       activeUnits < capAt(level);
+}
+
+/// {@template guild_size}
+/// The guild size rule (`guild_size`, SOC-47; assumed, Q-SOC-18):
+/// `sections = sections_at_level_1 + floor((level - 1) /
+/// extra_section_every_levels)`, the guild level read on the
+/// `commander_levels` curve.
+/// {@endtemplate}
+final class GuildSize {
+  /// {@macro guild_size}
+  const new({
+    required this.sectionsAtLevel1,
+    required this.extraSectionEveryLevels,
+  });
+
+  /// Sections a guild holds at level 1.
+  final int sectionsAtLevel1;
+
+  /// Levels between two extra sections.
+  final int extraSectionEveryLevels;
+
+  /// The sections a guild holds at guild [level], trainees included
+  /// (decision 213).
+  int sectionsAt(int level) =>
+      sectionsAtLevel1 + (level - 1) ~/ extraSectionEveryLevels;
 }
 
 /// {@template commander_levels}
@@ -657,6 +686,7 @@ Progression _readProgression(DataReader progression) {
   final xp = progression.map('xp_sources');
   final diminishing = progression.map('diminishing');
   final size = progression.map('section_size');
+  final guild = progression.map('guild_size');
   final levels = progression.map('commander_levels');
   return Progression(
     xpSources: XpSources(
@@ -680,6 +710,10 @@ Progression _readProgression(DataReader progression) {
       maxUnitsFactor: size.integer('max_units_factor'),
     ),
     guildCreationMinLevel: progression.integer('guild_creation_min_level'),
+    guildSize: GuildSize(
+      sectionsAtLevel1: guild.integer('sections_at_level_1'),
+      extraSectionEveryLevels: guild.integer('extra_section_every_levels'),
+    ),
     commanderLevels: CommanderLevels(
       maxLevel: levels.integer('max_level'),
       sectionXp: levels.integers('section_xp'),

@@ -23,7 +23,7 @@ enum StoreRefusal {
   /// Only a unit on the field is stored or recalled.
   notOnField,
 
-  /// The guild camp is never stored (HQ-30, HQ-47).
+  /// The guild camp is never stored by order (HQ-30, HQ-47).
   neverStored,
 
   /// A transport is stored empty: unload it first (HQ-49, decision 206).

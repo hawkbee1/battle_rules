@@ -734,6 +734,19 @@ void main() {
         );
       });
 
+      test('UNIT-31 every battle starts with full AP and HP and base '
+          'morale', () {
+        expect(
+          () => parseFixtures(battle: {'restore_hp: full': 'restore_hp: half'}),
+          throwsDataError(
+            'battle.yaml',
+            'battle_start.restore_hp',
+            'half',
+            'must be full',
+          ),
+        );
+      });
+
       test('SOC-03 a newcomer is offered at least one guild', () {
         expect(
           () =>
