@@ -32,6 +32,8 @@ export 'src/data/terrain_data.dart' hide terrainFile;
 export 'src/data/units_data.dart' hide unitsFile;
 export 'src/movement/movement_cost.dart';
 export 'src/progression/evolution.dart';
+export 'src/progression/section_level.dart';
+export 'src/progression/xp.dart';
 export 'src/scenario/scenario.dart' hide scenarioFile;
 export 'src/scenario/scenario_runner.dart';
 export 'src/vision/vision.dart';
