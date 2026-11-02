@@ -42,6 +42,25 @@ void validateGameData({
   _checkBattleStart(battle.battleStart);
 }
 
+/// Checks one battle's own settings, which an admin chose (decision 172),
+/// against the shared definitions: the AP maximum, the up-front AP of the
+/// actions, the teams and the battle start. `validateGameData` runs the
+/// same checks on the default settings.
+///
+/// Throws a [GameDataException] naming `battle.yaml`, the key and the value
+/// of the first problem found.
+void validateSettings({
+  required UnitsData units,
+  required CombatData combat,
+  required TerrainData terrain,
+  required BattleSettings battle,
+}) {
+  _checkApMax(units, battle.ap.max);
+  _checkUpFrontAp(units, combat, terrain, battle);
+  _checkTeams(battle);
+  _checkBattleStart(battle.battleStart);
+}
+
 Never _fail(String file, String key, Object? value, String problem) =>
     throw GameDataException(
       file: file,

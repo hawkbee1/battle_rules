@@ -62,6 +62,51 @@ void main() {
     });
   });
 
+  group('GameData.checkSettings', () {
+    final data = parseFixtures();
+    BattleSettings settings([Map<String, String> replace = const {}]) =>
+        BattleSettings.parse(readFixture('battle.yaml', replace));
+
+    test("keeps one battle's own settings apart from the shared "
+        'definitions (decision 172)', () {
+      final own = settings({'recovery_per_hour: 2': 'recovery_per_hour: 6'});
+
+      expect(data.checkSettings(own), same(own));
+      expect(own.ap.recoveryPerHour, equals(6));
+      expect(data.battle.ap.recoveryPerHour, equals(2));
+    });
+
+    test('UNIT-38 refuses an AP maximum below an action paid up front', () {
+      expect(
+        () => data.checkSettings(
+          settings({'max: 20\n  recovery': 'max: 3\n  recovery'}),
+        ),
+        throwsA(isA<GameDataException>()),
+      );
+    });
+
+    test('SOC-20 refuses fewer than two teams', () {
+      expect(
+        () => data.checkSettings(settings({'count: 3': 'count: 1'})),
+        throwsDataError('battle.yaml', 'teams.count', 1, 'must be 2 or more'),
+      );
+    });
+
+    test('UNIT-31 refuses a battle that does not start with full AP', () {
+      expect(
+        () => data.checkSettings(
+          settings({'restore_ap: full': 'restore_ap: half'}),
+        ),
+        throwsDataError(
+          'battle.yaml',
+          'battle_start.restore_ap',
+          'half',
+          'must be full',
+        ),
+      );
+    });
+  });
+
   group('GameData.parse', () {
     test('loads the fixtures without error', () {
       final data = parseFixtures();

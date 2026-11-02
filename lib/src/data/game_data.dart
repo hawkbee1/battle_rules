@@ -63,7 +63,10 @@ final class GameData {
   /// `terrain.yaml`.
   final TerrainData terrain;
 
-  /// `battle.yaml`.
+  /// `battle.yaml`: the default settings of a battle. Each battle plays
+  /// with its own settings, which an admin chooses from these (decision
+  /// 172) and [checkSettings] checks; the shared definitions above stay the
+  /// same for every battle.
   final BattleSettings battle;
 
   /// `economy.yaml`.
@@ -71,4 +74,20 @@ final class GameData {
 
   /// `medals.yaml`.
   final MedalsData medals;
+
+  /// [settings], one battle's own settings, once checked against the shared
+  /// definitions (decision 172): the AP maximum, the up-front AP of the
+  /// actions, the teams and the battle start.
+  ///
+  /// Throws a [GameDataException] naming `battle.yaml`, the key and the
+  /// value of the first problem found.
+  BattleSettings checkSettings(BattleSettings settings) {
+    validateSettings(
+      units: units,
+      combat: combat,
+      terrain: terrain,
+      battle: settings,
+    );
+    return settings;
+  }
 }
