@@ -33,4 +33,11 @@ final class SectionLevel {
   /// `max_units_factor` × [cap] (UNIT-40). Its storage holds as many.
   int maxUnits(int level) =>
       progression.sectionSize.maxUnitsFactor * cap(level);
+
+  /// Whether a section at commander [level] with [active] units on the
+  /// field and [owned] units in all has room for one more (ECO-04,
+  /// decision 130): a bought unit arrives on the field, so both the cap
+  /// (UNIT-39) and the units owned (UNIT-40) must leave room.
+  bool hasRoom({required int level, required int active, required int owned}) =>
+      active < cap(level) && owned < maxUnits(level);
 }

@@ -49,6 +49,7 @@ final class GameData {
       combat: data.combat,
       terrain: data.terrain,
       battle: data.battle,
+      economy: data.economy,
     );
     return data;
   }

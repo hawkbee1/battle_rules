@@ -499,6 +499,34 @@ void main() {
       });
     });
 
+    group('purchases', () {
+      test('ECO-04 rejects an unknown buyer', () {
+        expect(
+          () => parseFixtures(
+            units: {'purchasable_by: commander': 'purchasable_by: anyone'},
+          ),
+          throwsDataError(
+            'units.yaml',
+            'units.radio.purchasable_by',
+            'anyone',
+            'expected one of [commander, guild_commander]',
+          ),
+        );
+      });
+
+      test('ECO-17 rejects a price for something that is not sold', () {
+        expect(
+          () => parseFixtures(economy: {'camp: 450': 'castle: 450'}),
+          throwsDataError(
+            'economy.yaml',
+            'prices.castle',
+            'castle',
+            'not a unit or weapon type',
+          ),
+        );
+      });
+    });
+
     group('objects', () {
       test('MAP-40 rejects an object armor type not in armor_types', () {
         expect(

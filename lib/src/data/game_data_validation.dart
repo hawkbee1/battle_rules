@@ -1,8 +1,10 @@
 import 'package:battle_rules/src/data/battle_settings.dart';
 import 'package:battle_rules/src/data/combat_data.dart';
+import 'package:battle_rules/src/data/economy_data.dart';
 import 'package:battle_rules/src/data/game_data_exception.dart';
 import 'package:battle_rules/src/data/terrain_data.dart';
 import 'package:battle_rules/src/data/units_data.dart';
+import 'package:battle_rules/src/economy/money.dart';
 import 'package:battle_rules/src/progression/evolution.dart';
 
 /// The unit type whose base speed caps every flying unit's (decision 174).
@@ -20,6 +22,7 @@ void validateGameData({
   required CombatData combat,
   required TerrainData terrain,
   required BattleSettings battle,
+  required EconomyData economy,
 }) {
   _checkArmorTypes(units, terrain, combat.armorTypes);
   _checkWeaponLoadouts(units, combat);
@@ -34,6 +37,7 @@ void validateGameData({
   _checkCommanderLevels(units.progression.commanderLevels);
   _checkTrees(units);
   _checkUpFrontAp(units, combat, terrain, battle);
+  _checkPurchases(units, combat, economy);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -304,15 +308,34 @@ void _checkTrees(UnitsData units) {
         EvolvableStat.auraRadius => type.role.auraRadius,
         EvolvableStat.maxTotalWeight => type.role.maxTotalWeight,
         EvolvableStat.heal => type.role.heal,
-        EvolvableStat.hp ||
-        EvolvableStat.attack ||
-        EvolvableStat.defense ||
-        EvolvableStat.moveSpeed ||
-        EvolvableStat.visionRange => null,
+        _ => null,
       };
       if (base == null) {
         _fail(unitsFile, key, name, 'not a role value of $typeId');
       }
+    }
+  }
+}
+
+/// ECO-04 to ECO-06, ECO-17: a unit is bought by the commander or the guild
+/// chief, and every listed price is a unit type's or a weapon type's.
+void _checkPurchases(UnitsData units, CombatData combat, EconomyData economy) {
+  const buyers = [commanderBuyer, guildChiefBuyer];
+  for (final unit in units.unitTypes.values) {
+    final buyer = unit.purchasableBy;
+    if (buyer != null && !buyers.contains(buyer)) {
+      _fail(
+        unitsFile,
+        'units.${unit.id}.purchasable_by',
+        buyer,
+        'expected one of ${_list(buyers)}',
+      );
+    }
+  }
+  for (final item in economy.prices.keys) {
+    if (!units.unitTypes.containsKey(item) &&
+        !combat.weaponTypes.containsKey(item)) {
+      _fail(economyFile, 'prices.$item', item, 'not a unit or weapon type');
     }
   }
 }

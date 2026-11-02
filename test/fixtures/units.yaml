@@ -52,6 +52,7 @@ units:
   camp:
     category: encampment
     owner: guild_commander
+    purchasable_by: guild_commander
     counts_in_section_cap: false
     storable: false
     movement_class: tracked
