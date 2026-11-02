@@ -4,6 +4,11 @@
 /// (`apps/battle_team/plan/data/` in the hawkbee checkout) and the time.
 library;
 
+export 'src/actions/action_result.dart';
+export 'src/actions/capture.dart';
+export 'src/actions/hq_move.dart';
+export 'src/actions/push.dart';
+export 'src/actions/role_actions.dart';
 export 'src/ap/activity.dart';
 export 'src/ap/ap_pool.dart';
 export 'src/ap/movement.dart';

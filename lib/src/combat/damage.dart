@@ -49,6 +49,10 @@ final class Health {
   /// This health after losing [amount] HP, not below 0.
   Health damaged(double amount) =>
       Health(current: math.max(0, current - amount), max: max);
+
+  /// This health after gaining [amount] HP, not above [max] (heal, repair).
+  Health healed(double amount) =>
+      Health(current: math.min(max, current + amount), max: max);
 }
 
 /// {@template damage}
