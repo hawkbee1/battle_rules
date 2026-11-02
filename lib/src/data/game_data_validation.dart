@@ -3,6 +3,7 @@ import 'package:battle_rules/src/data/combat_data.dart';
 import 'package:battle_rules/src/data/game_data_exception.dart';
 import 'package:battle_rules/src/data/terrain_data.dart';
 import 'package:battle_rules/src/data/units_data.dart';
+import 'package:battle_rules/src/progression/evolution.dart';
 
 /// The unit type whose base speed caps every flying unit's (decision 174).
 const _flyingSpeedReference = 'jeep';
@@ -31,6 +32,7 @@ void validateGameData({
   _checkProjectileSpeeds(combat);
   _checkSpeedCaps(units);
   _checkCommanderLevels(units.progression.commanderLevels);
+  _checkTrees(units);
   _checkUpFrontAp(units, combat, terrain, battle);
 }
 
@@ -254,6 +256,63 @@ void _checkCommanderLevels(CommanderLevels levels) {
         sectionXp[index],
         'not above the previous value ${sectionXp[index - 1]}',
       );
+    }
+  }
+}
+
+/// UNIT-22, UNIT-23: the trees raise evolvable stats only, the default
+/// tree raises stats every unit has, an extra stat is a role value of its
+/// type, and a step raises a stat by a positive share up to a cap of at
+/// least its base.
+void _checkTrees(UnitsData units) {
+  final EvolutionTrees(:statCapOfBase, :defaultTree, :extraStats) = units.trees;
+  if (statCapOfBase < 1) {
+    _fail(unitsFile, 'trees.stat_cap_of_base', statCapOfBase, 'below 1');
+  }
+  if (defaultTree.stepBonus <= 0) {
+    _fail(
+      unitsFile,
+      'trees.default.step_bonus',
+      defaultTree.stepBonus,
+      'not above 0',
+    );
+  }
+  EvolvableStat evolvable(String key, String name) =>
+      EvolvableStat.byKey(name) ??
+      _fail(
+        unitsFile,
+        key,
+        name,
+        'not evolvable, expected one of '
+        '${_list(EvolvableStat.values.map((stat) => stat.key))}',
+      );
+  for (final (index, name) in defaultTree.stats.indexed) {
+    final key = 'trees.default.stats[$index]';
+    if (evolvable(key, name).role) {
+      _fail(unitsFile, key, name, 'a role value: list it in overrides');
+    }
+  }
+  for (final MapEntry(key: typeId, value: names) in extraStats.entries) {
+    final type =
+        units.unitTypes[typeId] ??
+        _fail(unitsFile, 'trees.overrides', typeId, 'not a unit type');
+    for (final (index, name) in names.indexed) {
+      final key = 'trees.overrides.$typeId.extra_stats[$index]';
+      final stat = evolvable(key, name);
+      final base = switch (stat) {
+        EvolvableStat.relayRange => type.role.relayRange,
+        EvolvableStat.auraRadius => type.role.auraRadius,
+        EvolvableStat.maxTotalWeight => type.role.maxTotalWeight,
+        EvolvableStat.heal => type.role.heal,
+        EvolvableStat.hp ||
+        EvolvableStat.attack ||
+        EvolvableStat.defense ||
+        EvolvableStat.moveSpeed ||
+        EvolvableStat.visionRange => null,
+      };
+      if (base == null) {
+        _fail(unitsFile, key, name, 'not a role value of $typeId');
+      }
     }
   }
 }
