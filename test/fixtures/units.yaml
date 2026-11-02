@@ -97,9 +97,9 @@ units:
     role: { max_total_weight: 4, max_unit_weight: 2 }
 
 progression:
-  xp_sources: { hit: 1, kill: 10, role_action: 3, capture: 40, near_commander_per_min: 2 }
+  xp_sources: { hit: 1, kill: 10, role_action: 3, capture: 40 }
   target_scaling: { cap: 2.5 }
-  diminishing: { window_s: 300, factor_per_repeat: 0.25 }
+  diminishing: { window_s: 300, factor_per_repeat: 0.25, same_spot_radius_m: 5 }
   friendly_hits_give_xp: false
   victory_xp: 4
   section_xp_share: 0.1

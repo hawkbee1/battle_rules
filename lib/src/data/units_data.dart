@@ -436,7 +436,6 @@ final class XpSources {
     required this.kill,
     required this.roleAction,
     required this.capture,
-    required this.nearCommanderPerMin,
   });
 
   /// XP per hit.
@@ -451,9 +450,6 @@ final class XpSources {
   /// XP of a capture, shared by the AP each unit put into the pot
   /// (decision 179).
   final double capture;
-
-  /// XP per minute near the unit's commander.
-  final double nearCommanderPerMin;
 }
 
 /// {@template diminishing}
@@ -461,13 +457,21 @@ final class XpSources {
 /// {@endtemplate}
 final class Diminishing {
   /// {@macro diminishing}
-  const new({required this.windowS, required this.factorPerRepeat});
+  const new({
+    required this.windowS,
+    required this.factorPerRepeat,
+    required this.sameSpotRadiusM,
+  });
 
   /// The window, in seconds.
   final double windowS;
 
   /// The XP factor per repeat within the window.
   final double factorPerRepeat;
+
+  /// A build this close to one of the unit's builds is at the same spot
+  /// (decision 198).
+  final double sameSpotRadiusM;
 }
 
 /// {@template section_size}
@@ -660,12 +664,12 @@ Progression _readProgression(DataReader progression) {
       kill: xp.number('kill'),
       roleAction: xp.number('role_action'),
       capture: xp.number('capture'),
-      nearCommanderPerMin: xp.number('near_commander_per_min'),
     ),
     targetScalingCap: progression.map('target_scaling').number('cap'),
     diminishing: Diminishing(
       windowS: diminishing.number('window_s'),
       factorPerRepeat: diminishing.number('factor_per_repeat'),
+      sameSpotRadiusM: diminishing.number('same_spot_radius_m'),
     ),
     friendlyHitsGiveXp: progression.boolean('friendly_hits_give_xp'),
     victoryXp: progression.number('victory_xp'),
