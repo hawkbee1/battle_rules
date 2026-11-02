@@ -121,9 +121,9 @@ typedef UnitCondition = ({UnitLocation location, ApPool pool, double morale});
 
 /// {@template storage_rules}
 /// Storage, deployment and the commander's death (HQ-02, HQ-03, HQ-13,
-/// HQ-24 to HQ-42, HQ-44, HQ-46, HQ-47, UNIT-28, UNIT-29), from
-/// `battle.yaml` `storage`, `commander_death` and `section_redeploy_lock_s`
-/// and the morale range of `combat.yaml`.
+/// HQ-19, HQ-20, HQ-24 to HQ-42, HQ-44, HQ-46, HQ-47, HQ-49, UNIT-28,
+/// UNIT-29), from `battle.yaml` `storage`, `commander_death` and
+/// `section_redeploy_lock_s` and the morale range of `combat.yaml`.
 ///
 /// Positions stay abstract: the caller gives the distances to the storage
 /// place. Nothing here depends on the HQ standing still, so storage and
@@ -277,6 +277,13 @@ final class StorageRules {
       xp: UnitXp(earned: xp.earned - lost, unspent: xp.unspent - lost),
     );
   }
+
+  /// A unit of a team eliminated (HQ-19, HQ-20, decision 208): on the
+  /// field, carried or not, it is stored for the next battle of the war,
+  /// with no AP or morale loss. The guild camp too, the one time it is
+  /// stored. A unit already stored or a prisoner stays where it is.
+  UnitLocation atElimination(UnitLocation location) =>
+      location.onField ? const Stored() : location;
 
   UnitCondition _storedWithLosses({
     required ApPool pool,
