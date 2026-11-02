@@ -65,6 +65,8 @@ void main() {
         type: type('jeep'),
         money: 100,
         hasRoom: true,
+        locked: false,
+        arrivalBlocked: false,
       ) as Bought;
 
       expect(bought.price, 80);
@@ -73,22 +75,90 @@ void main() {
 
     test('ECO-04 decision 130 buying needs free room and enough money', () {
       expect(
-        refusal(money.buyUnit(type: type('jeep'), money: 100, hasRoom: false)),
+        refusal(
+          money.buyUnit(
+            type: type('jeep'),
+            money: 100,
+            hasRoom: false,
+            locked: false,
+            arrivalBlocked: false,
+          ),
+        ),
         PurchaseRefusal.noRoom,
       );
       expect(
-        refusal(money.buyUnit(type: type('jeep'), money: 79, hasRoom: true)),
+        refusal(
+          money.buyUnit(
+            type: type('jeep'),
+            money: 79,
+            hasRoom: true,
+            locked: false,
+            arrivalBlocked: false,
+          ),
+        ),
         PurchaseRefusal.notEnoughMoney,
       );
       expect(
-        refusal(money.buyUnit(type: type('jeep'), money: 80, hasRoom: true)),
+        refusal(
+          money.buyUnit(
+            type: type('jeep'),
+            money: 80,
+            hasRoom: true,
+            locked: false,
+            arrivalBlocked: false,
+          ),
+        ),
         isNull,
       );
     });
 
+    test('ECO-07 HQ-35 HQ-46 decision 205 nothing is bought while the '
+        'section is locked or its arrival blocked', () {
+      Purchase jeep({bool locked = false, bool arrivalBlocked = false}) =>
+          money.buyUnit(
+            type: type('jeep'),
+            money: 100,
+            hasRoom: true,
+            locked: locked,
+            arrivalBlocked: arrivalBlocked,
+          );
+
+      expect(refusal(jeep(locked: true)), PurchaseRefusal.sectionLocked);
+      expect(
+        refusal(jeep(arrivalBlocked: true)),
+        PurchaseRefusal.arrivalBlocked,
+      );
+      expect(refusal(jeep()), isNull);
+    });
+
+    test(
+      'decision 205 the guild camp arrives at the HQ: blocked there too',
+      () {
+        expect(
+          refusal(
+            money.buyUnit(
+              type: type('camp'),
+              money: 450,
+              hasRoom: false,
+              locked: false,
+              arrivalBlocked: true,
+              guildChief: true,
+            ),
+          ),
+          PurchaseRefusal.arrivalBlocked,
+        );
+      },
+    );
+
     test('ECO-05 the commander buys radios', () {
       expect(
-        money.buyUnit(type: type('radio'), money: 80, hasRoom: true),
+        money.buyUnit(
+          type: type('radio'),
+          money: 80,
+          hasRoom: true,
+          locked: false,
+          arrivalBlocked: false,
+        ),
         isA<Bought>(),
       );
     });
@@ -96,7 +166,13 @@ void main() {
     test('UNIT-41 a commander is never bought', () {
       expect(
         refusal(
-          money.buyUnit(type: type('commander'), money: 1000, hasRoom: true),
+          money.buyUnit(
+            type: type('commander'),
+            money: 1000,
+            hasRoom: true,
+            locked: false,
+            arrivalBlocked: false,
+          ),
         ),
         PurchaseRefusal.notForSale,
       );
@@ -108,6 +184,8 @@ void main() {
         type: type('camp'),
         money: 450,
         hasRoom: false,
+        locked: false,
+        arrivalBlocked: false,
         guildChief: chief,
         guildHasCamp: exists,
       );

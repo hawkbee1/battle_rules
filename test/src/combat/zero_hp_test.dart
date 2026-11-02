@@ -128,11 +128,11 @@ void main() {
   test('COMBAT-43 prisoner storage is separate and unlimited', () {
     var storage = const PrisonerStorage();
     for (var prisoner = 0; prisoner < 500; prisoner++) {
-      storage = storage.added('p$prisoner');
+      storage = storage.added('p$prisoner', ownerSectionId: 'enemy');
     }
 
     expect(storage.prisoners, hasLength(500));
-    expect(() => storage.prisoners.add('x'), throwsUnsupportedError);
+    expect(() => storage.owners['x'] = 'enemy', throwsUnsupportedError);
   });
 
   test('UNIT-39 the section size cap grows by one every few commander '
