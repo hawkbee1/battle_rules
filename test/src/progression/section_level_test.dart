@@ -32,6 +32,14 @@ void main() {
     test('UNIT-40 a section owns at most 2 × cap units', () {
       expect(levels.maxUnits(4), 10);
     });
+
+    test('ECO-04 decision 130 room needs a place under the cap and under '
+        'the units owned', () {
+      // Level 1: cap 4, owns at most 8.
+      expect(levels.hasRoom(level: 1, active: 3, owned: 7), isTrue);
+      expect(levels.hasRoom(level: 1, active: 4, owned: 4), isFalse);
+      expect(levels.hasRoom(level: 1, active: 1, owned: 8), isFalse);
+    });
   });
 
   group('SectionLevel on the plan data', () {

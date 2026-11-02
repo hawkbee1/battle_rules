@@ -19,7 +19,7 @@ void main() {
 
     test('reads the default and listed prices', () {
       expect(economy.defaultPrice, 80);
-      expect(economy.prices, {'camp': 450.0});
+      expect(economy.prices, {'camp': 450});
     });
 
     test('priceOf gives the listed price, else the default price', () {
@@ -43,6 +43,15 @@ void main() {
       expect(economy.transferFeeOutsideGuild, 0.05);
       expect(economy.xpPurchasable, isFalse);
       expect(economy.buildDestroyFarmingLimit, 'none');
+    });
+
+    test('ECO-16 decision 200 rejects an amount that is not whole w€', () {
+      expect(
+        () => EconomyData.parse(
+          readFixture('economy.yaml', {'camp: 450': 'camp: 450.5'}),
+        ),
+        throwsDataError('economy.yaml', 'prices.camp', 450.5, 'integer'),
+      );
     });
   });
 }

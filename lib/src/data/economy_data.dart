@@ -1,7 +1,7 @@
 import 'package:battle_rules/src/data/data_reader.dart';
 
 /// The name of the economy data file in messages.
-const _economyFile = 'economy.yaml';
+const economyFile = 'economy.yaml';
 
 /// {@template economy_data}
 /// The `economy.yaml` game data file: currency, prices, earnings and
@@ -24,26 +24,28 @@ final class EconomyData {
 
   /// Parses the text of `economy.yaml`.
   factory parse(String text) {
-    final reader = DataReader.parse(_economyFile, text);
+    final reader = DataReader.parse(economyFile, text);
     final prices = reader.map('prices');
     final earnings = reader.map('earnings');
     final fees = reader.map('transfer_fees');
     return EconomyData(
       version: reader.integer('version'),
       currency: reader.string('currency'),
-      minStartingMoney: reader.map('war_defaults').number('min_starting_money'),
-      defaultPrice: prices.number('default'),
+      minStartingMoney: reader
+          .map('war_defaults')
+          .integer('min_starting_money'),
+      defaultPrice: prices.integer('default'),
       prices: Map.unmodifiable({
         for (final key in prices.keys)
-          if (key != 'default') key: prices.number(key),
+          if (key != 'default') key: prices.integer(key),
       }),
       earnings: Earnings(
-        hit: earnings.number('hit'),
-        kill: earnings.number('kill'),
-        construction: earnings.number('construction'),
-        heal: earnings.number('heal'),
-        hqHit: earnings.number('hq_hit'),
-        hqDestruction: earnings.number('hq_destruction'),
+        hit: earnings.integer('hit'),
+        kill: earnings.integer('kill'),
+        construction: earnings.integer('construction'),
+        heal: earnings.integer('heal'),
+        hqHit: earnings.integer('hq_hit'),
+        hqDestruction: earnings.integer('hq_destruction'),
       ),
       transferFeeInsideGuild: fees.number('inside_guild'),
       transferFeeOutsideGuild: fees.number('outside_guild'),
@@ -59,13 +61,14 @@ final class EconomyData {
   final String currency;
 
   /// Least money of a section; also a new section's money (decision 102).
-  final double minStartingMoney;
+  /// Amounts are whole w€ (decision 200).
+  final int minStartingMoney;
 
   /// Price of anything not listed in [prices].
-  final double defaultPrice;
+  final int defaultPrice;
 
   /// Listed prices, by item.
-  final Map<String, double> prices;
+  final Map<String, int> prices;
 
   /// Money earned by the acting unit's section.
   final Earnings earnings;
@@ -83,7 +86,7 @@ final class EconomyData {
   final String buildDestroyFarmingLimit;
 
   /// The price of [item]: its listed price, else [defaultPrice].
-  double priceOf(String item) => prices[item] ?? defaultPrice;
+  int priceOf(String item) => prices[item] ?? defaultPrice;
 }
 
 /// {@template earnings}
@@ -101,20 +104,20 @@ final class Earnings {
   });
 
   /// Per hit.
-  final double hit;
+  final int hit;
 
   /// Per kill.
-  final double kill;
+  final int kill;
 
   /// Per construction.
-  final double construction;
+  final int construction;
 
   /// Per heal.
-  final double heal;
+  final int heal;
 
   /// Per hit on an HQ.
-  final double hqHit;
+  final int hqHit;
 
   /// Per HQ destroyed.
-  final double hqDestruction;
+  final int hqDestruction;
 }
