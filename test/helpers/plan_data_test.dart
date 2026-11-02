@@ -23,4 +23,12 @@ void main() {
       );
     });
   });
+
+  group('readPlanEconomy', () {
+    test('finds economy.yaml in plan/milestones', () {
+      final text = readPlanEconomy();
+
+      expect(text, contains(RegExp('^transfer_fees:', multiLine: true)));
+    });
+  });
 }

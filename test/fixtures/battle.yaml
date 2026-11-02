@@ -1,0 +1,48 @@
+# Test fixture: a small valid battle file. Numbers are fixture values, not game data.
+version: 5
+
+commander_death:
+  xp_loss_share: 0.2
+  ap_loss_share: 0.5
+  morale_loss: 10
+
+ap:
+  max: 20
+  recovery_per_hour: 2
+
+battle_start:
+  restore_ap: full
+  restore_hp: full
+  restore_morale: base
+
+teams:
+  count: 3
+
+capture:
+  duration_s: 900
+  pot_ap: 40
+  contribution_ap: 4
+  radius_m: 25
+
+hq:
+  hp: 800
+  ap_max: 20
+  ap_per_m: 0.5
+  speed_m_per_h: 3
+  hit_box_m: { width: 15, length: 18, height: 6 }
+
+victory:
+  relics_to_hold: 3
+  hold_s: 3600
+
+storage:
+  store_radius_m: 8
+  recall_s: 7200
+  deploy_ap: 6
+  deploy_block_radius_m: 15
+
+weather:
+  mode: random
+  states: [clear, fog]
+
+section_redeploy_lock_s: 1800

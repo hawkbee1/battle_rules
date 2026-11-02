@@ -1,0 +1,25 @@
+# Test fixture: a small valid economy file. Numbers are fixture values, not game data.
+version: 1
+currency: "w€"
+
+war_defaults:
+  min_starting_money: 400
+
+prices:
+  default: 80
+  camp: 450
+
+earnings:
+  hit: 2
+  kill: 6
+  construction: 4
+  heal: 3
+  hq_hit: 12
+  hq_destruction: 90
+
+transfer_fees:
+  inside_guild: 0.01
+  outside_guild: 0.05
+
+xp_purchasable: false
+build_destroy_farming_limit: none
