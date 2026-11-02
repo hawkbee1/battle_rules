@@ -383,6 +383,16 @@ void main() {
       expect(resurrected.xp.earned, 480);
     });
 
+    test("HQ-19 HQ-20 decision 208 an eliminated team's units on the field "
+        'are stored, its guild camp too; stored ones and prisoners stay', () {
+      expect(storage.atElimination(const Deployed()), isA<Stored>());
+      expect(storage.atElimination(const Carried('boat-1')), isA<Stored>());
+      const stored = Stored();
+      const prisoner = Prisoner('enemy');
+      expect(storage.atElimination(stored), same(stored));
+      expect(storage.atElimination(prisoner), same(prisoner));
+    });
+
     test('COMBAT-36 a unit whose death is final never resurrects', () {
       expect(
         () => storage.resurrect(
