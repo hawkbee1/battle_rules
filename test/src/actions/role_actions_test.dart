@@ -119,6 +119,16 @@ void main() {
     });
   });
 
+  test('an action of no duration is done at once', () {
+    const action = TimedAction(
+      ap: 1,
+      duration: Duration.zero,
+      startedAt: Duration.zero,
+    );
+
+    expect(action.progressAt(Duration.zero), 1);
+  });
+
   group('repair', () {
     test(
       'COMBAT-07 a repair costs its AP up front, then takes its duration',

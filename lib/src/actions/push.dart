@@ -92,10 +92,13 @@ final class PushingRules {
   /// The movement cost (its `push` profile prices each metre).
   final MovementCost cost;
 
-  /// [unit] adds `contribution_ap` to [pot], ordered at battle time [now],
-  /// as often as it likes (decision 171). It must list `push` (UNIT-38).
+  /// [unit], of [team], adds `contribution_ap` to [pot], ordered at
+  /// battle time [now], as often as it likes (decision 171). It must list
+  /// `push` (UNIT-38) and belong to the team that owns the relic
+  /// (RELIC-19, RELIC-24).
   ActionResult contribute({
     required UnitType unit,
+    required String team,
     required PushPot pot,
     required ApPool pool,
     required Duration now,
@@ -103,6 +106,7 @@ final class PushingRules {
     if (!unit.actions.contains(UnitAction.push)) {
       return const ActionRefused(ActionRefusal.notInActions);
     }
+    if (team != pot.owner) return const ActionRefused(ActionRefusal.notOwner);
     final paid = pool.payWhenReady(push.contributionAp, now);
     if (paid == null) return const ActionRefused(ActionRefusal.costAboveApMax);
     return PushContributed(

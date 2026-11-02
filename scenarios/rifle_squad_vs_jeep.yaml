@@ -1,0 +1,19 @@
+# Four soldiers with rifles against a jeep with a machine gun, 120 m apart on
+# grass, in clear weather. Each soldier spends its pool (15 rifle shots, with a
+# reload after 10); 30 s in, the jeep spends its pool on the first soldier.
+name: rifle squad vs jeep
+seed: 1
+weather: clear
+terrain: grass
+units:
+  s1: { type: soldier, team: red, position: 0 }
+  s2: { type: soldier, team: red, position: 2 }
+  s3: { type: soldier, team: red, position: 4 }
+  s4: { type: soldier, team: red, position: 6 }
+  j1: { type: jeep, team: blue, position: 120 }
+orders:
+  - { at_s: 0, order: fire, unit: s1, target: j1, shots: 15 }
+  - { at_s: 0, order: fire, unit: s2, target: j1, shots: 15 }
+  - { at_s: 0, order: fire, unit: s3, target: j1, shots: 15 }
+  - { at_s: 0, order: fire, unit: s4, target: j1, shots: 15 }
+  - { at_s: 30, order: fire, unit: j1, target: s1, shots: 30 }

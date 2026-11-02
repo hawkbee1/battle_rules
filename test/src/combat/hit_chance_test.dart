@@ -143,7 +143,7 @@ void main() {
         targetSpeedMps: 0,
         distanceM: 100,
       );
-      final random = DartSeededRandom(7);
+      final random = XorshiftRandom(7);
       var hits = 0;
       for (var roll = 0; roll < 10000; roll++) {
         if (HitChance.roll(planChance, random).hits) hits++;
@@ -164,9 +164,19 @@ void main() {
       expect(miss.chance, 0.5);
     });
 
+    test('the seeded random draws the same numbers on every platform and '
+        'release', () {
+      final random = XorshiftRandom(1);
+
+      expect(
+        [for (var draw = 0; draw < 3; draw++) random.nextDouble()],
+        [0.961217265327276, 0.9649285603562618, 0.412078295084913],
+      );
+    });
+
     test('the same seed gives the same rolls', () {
-      final first = DartSeededRandom(3);
-      final second = DartSeededRandom(3);
+      final first = XorshiftRandom(3);
+      final second = XorshiftRandom(3);
 
       expect(first.seed, 3);
       expect(

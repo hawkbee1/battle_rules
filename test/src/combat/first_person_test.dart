@@ -126,12 +126,12 @@ void main() {
       final first = FirstPersonShots.deviate(
         const Vec3(1, 0, 0),
         2,
-        DartSeededRandom(42),
+        XorshiftRandom(42),
       );
       final second = FirstPersonShots.deviate(
         const Vec3(1, 0, 0),
         2,
-        DartSeededRandom(42),
+        XorshiftRandom(42),
       );
 
       expect(first.toString(), second.toString());
@@ -187,6 +187,12 @@ void main() {
       ]);
 
       expect((outcome as ShotHitsTarget).targetId, 'crosser');
+    });
+
+    test('the shooter never hits its own hit volume', () {
+      final outcome = fire([soldier('me', -0.1), soldier('target', 100)]);
+
+      expect((outcome as ShotHitsTarget).targetId, 'target');
     });
 
     test('a shot over a target misses it', () {

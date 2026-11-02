@@ -136,7 +136,8 @@ final class FirstPersonShots {
   /// projectile flies at the weapon's speed up to its range; the first of
   /// the [targets] (moving as they do during the flight) or of the
   /// obstacles of [obstacles] on its path is hit; a target that leaves the
-  /// line before the projectile arrives is missed. Throws an
+  /// line before the projectile arrives is missed. A target whose hit
+  /// volume holds [origin] is the shooter itself and is never hit. Throws an
   /// [ArgumentError] for a weapon that does not fly (artillery, the
   /// explosive charge).
   ShotOutcome fire({
@@ -168,6 +169,8 @@ final class FirstPersonShots {
     ShotTarget? best;
     for (final target in targets) {
       final time = _entryTime(origin, direction * speed, target, maxTime);
+      // A hit volume that holds the muzzle is the shooter's own: skipped.
+      if (time == 0) continue;
       if (time != null && time < bestTime) {
         bestTime = time;
         best = target;

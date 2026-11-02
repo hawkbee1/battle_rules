@@ -1,0 +1,16 @@
+# Artillery 900 m from two tanks it cannot see. A scout of another section sees
+# them and reports through a radio in range, so the artillery may fire at the
+# position (COMBAT-12). Two shots, one reload between them; the splash also
+# hits the second tank, 5 m away.
+name: artillery with a radio-relayed target
+seed: 3
+weather: clear
+terrain: grass
+units:
+  a1: { type: artillery, team: red, position: 0 }
+  r1: { type: radio, team: red, position: 600 }
+  sc1: { type: scout, team: red, section: scouts, position: 700 }
+  t1: { type: tank, team: blue, position: 900 }
+  t2: { type: tank, team: blue, position: 905 }
+orders:
+  - { at_s: 0, order: artillery, unit: a1, target: t1, spotter: sc1, radio: r1, shots: 2 }

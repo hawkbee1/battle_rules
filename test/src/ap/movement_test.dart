@@ -104,6 +104,20 @@ void main() {
       expect(move.pool.value, 10);
     });
 
+    test('a move ordered before a pending payment starts after it', () {
+      final pending = _pool(4).withValue(0, const Duration(hours: 1));
+      final move = moveAlong(
+        pool: pending,
+        start: Duration.zero,
+        lengthM: 1,
+        apPerM: 1,
+        speedMps: 1,
+      );
+
+      // From 1 h, the metre's AP come back in half an hour.
+      expect(move.arrivesAt, const Duration(minutes: 90));
+    });
+
     test('a move of 0 m arrives at once', () {
       final move = moveAlong(
         pool: _pool(4),

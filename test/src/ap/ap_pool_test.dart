@@ -61,15 +61,28 @@ void main() {
       expect(empty.apAt(_hour * 1000), soldier.stats.apMax);
     });
 
-    test('rejects a time before its last update', () {
-      expect(
-        () => ApPool.full(
-          max: 10,
-          recoveryPerHour: 2,
-          at: _hour,
-        ).apAt(Duration.zero),
-        throwsArgumentError,
+    test('before a pending payment it spares only what that payment does '
+        'not need', () {
+      // Paid at 2 h, after waiting: empty then.
+      final pending = ApPool(
+        max: 10,
+        recoveryPerHour: 2,
+        value: 1,
+        updatedAt: _hour * 2,
       );
+
+      expect(pending.apAt(_hour * 2), 1);
+      expect(pending.apAt(const Duration(minutes: 90)), 0);
+      expect(pending.apAt(_hour), 0);
+    });
+
+    test('COMBAT-06 paid actions ordered together run one after another', () {
+      final first = _pool(1).payWhenReady(4, Duration.zero)!;
+      final second = first.pool.payWhenReady(2, Duration.zero)!;
+
+      expect(first.at, _hour * 1.5);
+      expect(second.at, _hour * 2.5);
+      expect(second.pool.value, 0);
     });
 
     group('readyAt', () {

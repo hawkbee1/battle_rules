@@ -49,6 +49,21 @@ final rifle = data.combat.weaponTypes['rifle'];
 The caller reads the files. `economy.yaml` lives in `plan/milestones/`, the
 other five in `plan/data/`.
 
+## Scenario harness
+
+`bin/scenario.dart` plays a scripted scenario with the rules core and prints an
+event log, a summary and one machine-readable line, to tune the placeholder
+numbers (decision 69):
+
+```sh
+dart run bin/scenario.dart scenarios/rifle_squad_vs_jeep.yaml
+dart run bin/scenario.dart <file> --data <plan data directory>
+```
+
+Scenarios are YAML files in `scenarios/` (units on a line, a seed, the weather,
+timed `fire`, `artillery`, `move` and `push` orders). The tests play the
+committed ones and check their summaries.
+
 ## Specification
 
 The rules live in the Battle Team app repository, mounted in hawkbee at

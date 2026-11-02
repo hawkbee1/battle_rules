@@ -64,8 +64,9 @@ final class ZeroHp {
 
   /// Whether [target] may be spared when [attacker] deals the final blow
   /// (COMBAT-37): the attacker's category is `only_when_final_blow_by`
-  /// (a commander), the target is an enemy (decision 131), and its type is
-  /// not in `never_spared` (decision 149).
+  /// (a commander), the target is an enemy (decision 131), and its
+  /// category is not in `never_spared` (decision 149): both are matched by
+  /// category, so a new commander type is never spared either.
   bool maySpare({
     required UnitType attacker,
     required UnitType target,
@@ -73,7 +74,7 @@ final class ZeroHp {
   }) =>
       attacker.category == rules.onlyWhenFinalBlowBy &&
       targetIsEnemy &&
-      !rules.neverSpared.contains(target.id);
+      !rules.neverSpared.contains(target.category);
 
   /// What happens to [target], with [moraleValue] and [ap] AP, brought to
   /// 0 HP by [attacker] (COMBAT-36 to COMBAT-39).

@@ -59,19 +59,29 @@ final class ApPool {
   /// The battle time of the last update.
   final Duration updatedAt;
 
-  /// AP at battle time [time], not before [updatedAt] (COMBAT-02).
+  /// AP at battle time [time] (COMBAT-02).
+  ///
+  /// Before [updatedAt] (a payment that waited for its AP dates the pool
+  /// in the future), it is what the pool can spare then without taking
+  /// from that payment: never below 0.
   double apAt(Duration time) {
-    _checkNotBefore(time);
+    if (time < updatedAt) {
+      return math.max(0, value - _hours(updatedAt - time) * recoveryPerHour);
+    }
     return math.min(max, value + _hours(time - updatedAt) * recoveryPerHour);
   }
 
   /// The earliest battle time from [from] at which the pool holds [cost];
   /// null when [cost] is above [max], so it never will (COMBAT-06).
+  ///
+  /// Paid actions run one after another: nothing starts before the last
+  /// payment ([updatedAt]).
   Duration? readyAt(double cost, Duration from) {
     if (cost > max) return null;
-    final missing = cost - apAt(from);
-    if (missing <= 0) return from;
-    return from + _durationOfHours(missing / recoveryPerHour);
+    final start = from > updatedAt ? from : updatedAt;
+    final missing = cost - apAt(start);
+    if (missing <= 0) return start;
+    return start + _durationOfHours(missing / recoveryPerHour);
   }
 
   /// Pays [cost] at the earliest battle time from [from] at which the pool
@@ -81,8 +91,9 @@ final class ApPool {
   ({Duration at, ApPool pool})? payWhenReady(double cost, Duration from) {
     final at = readyAt(cost, from);
     if (at == null) return null;
+    final available = apAt(at);
     // After a wait the pool holds exactly [cost]: it is left empty.
-    final rest = at == from ? apAt(from) - cost : 0.0;
+    final rest = available > cost ? available - cost : 0.0;
     return (at: at, pool: withValue(rest, at));
   }
 
@@ -93,16 +104,6 @@ final class ApPool {
     value: newValue,
     updatedAt: time,
   );
-
-  void _checkNotBefore(Duration time) {
-    if (time < updatedAt) {
-      throw ArgumentError.value(
-        time,
-        'time',
-        'before the last update $updatedAt',
-      );
-    }
-  }
 }
 
 double _hours(Duration duration) =>
