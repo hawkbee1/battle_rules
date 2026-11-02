@@ -405,6 +405,100 @@ void main() {
       });
     });
 
+    group('trees', () {
+      const defaultStats = 'stats: [hp, attack]';
+      const radioOverride = 'radio: { extra_stats: [relay_range] }';
+
+      test('UNIT-22 rejects AP maximum in a tree', () {
+        expect(
+          () => parseFixtures(units: {defaultStats: 'stats: [hp, ap_max]'}),
+          throwsDataError(
+            'units.yaml',
+            'trees.default.stats[1]',
+            'ap_max',
+            'not evolvable',
+          ),
+        );
+      });
+
+      test('UNIT-23 rejects a role value in the default tree', () {
+        expect(
+          () => parseFixtures(units: {defaultStats: 'stats: [hp, heal]'}),
+          throwsDataError(
+            'units.yaml',
+            'trees.default.stats[1]',
+            'heal',
+            'a role value: list it in overrides',
+          ),
+        );
+      });
+
+      test('UNIT-23 rejects an extra stat its type has no role value for', () {
+        expect(
+          () => parseFixtures(
+            units: {radioOverride: 'radio: { extra_stats: [heal] }'},
+          ),
+          throwsDataError(
+            'units.yaml',
+            'trees.overrides.radio.extra_stats[0]',
+            'heal',
+            'not a role value of radio',
+          ),
+        );
+        expect(
+          () => parseFixtures(
+            units: {radioOverride: 'radio: { extra_stats: [defense] }'},
+          ),
+          throwsDataError(
+            'units.yaml',
+            'trees.overrides.radio.extra_stats[0]',
+            'defense',
+            'not a role value of radio',
+          ),
+        );
+      });
+
+      test('UNIT-23 rejects an override for an unknown unit type', () {
+        expect(
+          () => parseFixtures(
+            units: {radioOverride: 'wizard: { extra_stats: [relay_range] }'},
+          ),
+          throwsDataError(
+            'units.yaml',
+            'trees.overrides',
+            'wizard',
+            'not a unit type',
+          ),
+        );
+      });
+
+      test('UNIT-22 rejects a cap below the base value', () {
+        expect(
+          () => parseFixtures(
+            units: {'stat_cap_of_base: 2.0': 'stat_cap_of_base: 0.5'},
+          ),
+          throwsDataError(
+            'units.yaml',
+            'trees.stat_cap_of_base',
+            0.5,
+            'below 1',
+          ),
+        );
+      });
+
+      test('UNIT-23 rejects a step that raises nothing', () {
+        expect(
+          () => parseFixtures(units: {'step_bonus: 0.25': 'step_bonus: 0'}),
+          throwsDataError(
+            'units.yaml',
+            'trees.default.step_bonus',
+            0,
+            'not above 0',
+          ),
+        );
+      });
+    });
+
     group('objects', () {
       test('MAP-40 rejects an object armor type not in armor_types', () {
         expect(

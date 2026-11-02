@@ -122,7 +122,8 @@ final class UnitType {
   /// Its hit volume for first-person shots (decision 183).
   final HitBox hitBox;
 
-  /// Its base stats (`base`).
+  /// Its stats: the `base` values of `units.yaml`, or a unit's effective
+  /// values in a type that `Evolution.evolve` made (UNIT-22).
   final UnitStats stats;
 
   /// Its default and allowed weapons (UNIT-03).
@@ -131,7 +132,8 @@ final class UnitType {
   /// The actions it can do besides moving and shooting (UNIT-38).
   final Set<UnitAction> actions;
 
-  /// Its role values; empty when the type has no `role`.
+  /// Its role values; empty when the type has no `role`. Like [stats], a
+  /// unit's effective values in a type that `Evolution.evolve` made.
   final UnitRole role;
 
   /// Whether its death is final. Only the commander has `permadeath: false`:
@@ -156,6 +158,28 @@ final class UnitType {
 
   /// Whether it has the `sail` capability.
   bool get canSail => capabilities.contains(Capability.sail);
+
+  /// This type with other [stats] and [role] values: a unit's effective
+  /// ones (UNIT-22).
+  UnitType withValues({required UnitStats stats, required UnitRole role}) =>
+      UnitType(
+        id: id,
+        category: category,
+        movementClass: movementClass,
+        capabilities: capabilities,
+        flight: flight,
+        armorType: armorType,
+        hitBox: hitBox,
+        stats: stats,
+        weapons: weapons,
+        actions: actions,
+        role: role,
+        permadeath: permadeath,
+        purchasableBy: purchasableBy,
+        owner: owner,
+        countsInSectionCap: countsInSectionCap,
+        storable: storable,
+      );
 }
 
 /// {@template unit_stats}
@@ -197,6 +221,25 @@ final class UnitStats {
 
   /// Vision range in metres, before modifiers.
   final double visionRange;
+
+  /// These stats with new values for the evolvable ones (UNIT-20). AP
+  /// maximum and AP per metre never evolve (decision 167).
+  UnitStats withEvolvable({
+    required double hp,
+    required double attack,
+    required double defense,
+    required double moveSpeed,
+    required double visionRange,
+  }) => UnitStats(
+    weight: weight,
+    hp: hp,
+    apMax: apMax,
+    apPerM: apPerM,
+    attack: attack,
+    defense: defense,
+    moveSpeed: moveSpeed,
+    visionRange: visionRange,
+  );
 }
 
 /// {@template weapon_loadout}
@@ -288,6 +331,28 @@ final class UnitRole {
 
   /// Heaviest unit a transport carries (decision 91).
   final double? maxUnitWeight;
+
+  /// These role values with new values for the evolvable ones (UNIT-23).
+  UnitRole withEvolvable({
+    required double? auraRadius,
+    required double? heal,
+    required double? relayRange,
+    required double? maxTotalWeight,
+  }) => UnitRole(
+    auraRadius: auraRadius,
+    build: build,
+    repair: repair,
+    reportsToRadio: reportsToRadio,
+    observe: observe,
+    heal: heal,
+    healAp: healAp,
+    earnsMoneyWhenHealing: earnsMoneyWhenHealing,
+    relayRange: relayRange,
+    sharesWith: sharesWith,
+    transportable: transportable,
+    maxTotalWeight: maxTotalWeight,
+    maxUnitWeight: maxUnitWeight,
+  );
 }
 
 /// {@template observe_role}
