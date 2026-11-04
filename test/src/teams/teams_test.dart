@@ -182,6 +182,81 @@ void main() {
       expect(rules.hqManager(candidates, FixedRandom([0.99])).playerId, 'p2');
     });
 
+    group('HQ-07 decision 220 a player who logs in', () {
+      const low = ManagerCandidate(
+        playerId: 'p1',
+        medals: {'bronze': 1},
+        commanderXp: 10,
+      );
+      const high = ManagerCandidate(
+        playerId: 'p2',
+        medals: {'gold': 1},
+        commanderXp: 10,
+      );
+      const twin = ManagerCandidate(
+        playerId: 'p3',
+        medals: {'bronze': 1},
+        commanderXp: 10,
+      );
+      final noDraw = FixedRandom(const []);
+
+      test('manages a team that has no manager yet', () {
+        expect(
+          rules
+              .afterLogIn(manager: null, entering: low, random: noDraw)
+              .playerId,
+          'p1',
+        );
+      });
+
+      test('takes the role from a lower-ranking manager, delegated or not', () {
+        expect(
+          rules
+              .afterLogIn(manager: low, entering: high, random: noDraw)
+              .playerId,
+          'p2',
+        );
+      });
+
+      test('leaves it to a higher-ranking manager or to himself', () {
+        expect(
+          rules
+              .afterLogIn(manager: high, entering: low, random: noDraw)
+              .playerId,
+          'p2',
+        );
+        expect(
+          rules
+              .afterLogIn(manager: high, entering: high, random: noDraw)
+              .playerId,
+          'p2',
+        );
+      });
+
+      test('Q-HQ-12 draws the role on an exact tie', () {
+        expect(
+          rules
+              .afterLogIn(
+                manager: low,
+                entering: twin,
+                random: FixedRandom([0]),
+              )
+              .playerId,
+          'p1',
+        );
+        expect(
+          rules
+              .afterLogIn(
+                manager: low,
+                entering: twin,
+                random: FixedRandom([0.99]),
+              )
+              .playerId,
+          'p3',
+        );
+      });
+    });
+
     test('a team with no player has no manager to choose', () {
       expect(
         () => rules.hqManager(const [], FixedRandom([0])),
@@ -189,8 +264,8 @@ void main() {
       );
     });
 
-    test('HQ-05 HQ-07 HQ-08 the role changes only when the manager delegates '
-        'it to another player of the team', () {
+    test('HQ-05 the manager delegates the role to another player of the '
+        'team', () {
       const manager = HqManager('p1');
       const team = {'p1', 'p2', 'p3'};
       DelegationRefusal? refusal(String by, String to) =>

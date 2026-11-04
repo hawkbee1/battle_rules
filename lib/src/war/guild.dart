@@ -93,8 +93,7 @@ final class Guild {
   /// Each section's role, by section id.
   final Map<String, GuildRole> roles;
 
-  /// The XP its sections' units earned while in it (SOC-47; assumed,
-  /// Q-SOC-18).
+  /// The XP its sections' units earned while in it (SOC-47, decision 221).
   final double xp;
 
   /// Whether it accepts newcomers (SOC-03, SOC-08).
@@ -116,7 +115,7 @@ final class Guild {
 /// {@template guild_rules}
 /// Guilds (SOC-46 to SOC-53, decisions 108, 146, 153, 155, 213 to 215),
 /// from `units.yaml` `progression`: `guild_creation_min_level`,
-/// `guild_size` and the `commander_levels` curve (assumed, Q-SOC-18).
+/// `guild_size` and the `commander_levels` curve (decision 221).
 ///
 /// A section without a guild plays on and stores its units at the HQ
 /// (SOC-49, `StorageRules.placeOf`).
@@ -129,7 +128,7 @@ final class GuildRules {
   final Progression progression;
 
   /// The guild's level, read on the `commander_levels` curve from its XP
-  /// (assumed, Q-SOC-18).
+  /// (decision 221).
   int levelOf(Guild guild) => SectionLevel(progression).levelFor(guild.xp);
 
   /// The sections [guild] holds at its level, trainees included (SOC-47,
@@ -243,8 +242,8 @@ final class GuildRules {
       ? GuildChanged(guild._with(optedIn: optedIn))
       : const GuildRefused(GuildRefusal.notChief);
 
-  /// [guild] after one of its sections' units earned [xp] (SOC-47; assumed,
-  /// Q-SOC-18): every XP point counts, trainees' included.
+  /// [guild] after one of its sections' units earned [xp] (SOC-47,
+  /// decision 221): every XP point counts, trainees' included.
   Guild earned(Guild guild, double xp) => guild._with(xp: guild.xp + xp);
 
   GuildChange _decide(

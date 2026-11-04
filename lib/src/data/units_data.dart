@@ -423,7 +423,7 @@ final class Progression {
   /// Commander level needed to create a guild (decision 155).
   final int guildCreationMinLevel;
 
-  /// The guild size rule (`guild_size`, SOC-47; assumed, Q-SOC-18).
+  /// The guild size rule (`guild_size`, SOC-47, decision 221).
   final GuildSize guildSize;
 
   /// The level table (`commander_levels`, UNIT-17, decision 144).
@@ -510,7 +510,7 @@ final class SectionSize {
 }
 
 /// {@template guild_size}
-/// The guild size rule (`guild_size`, SOC-47; assumed, Q-SOC-18):
+/// The guild size rule (`guild_size`, SOC-47, decision 221):
 /// `sections = sections_at_level_1 + floor((level - 1) /
 /// extra_section_every_levels)`, the guild level read on the
 /// `commander_levels` curve.
