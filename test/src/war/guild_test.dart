@@ -62,13 +62,16 @@ void main() {
       );
     });
 
-    test('SOC-47 Q-SOC-18 the XP its sections earn in it sets its level and '
-        'its size', () {
-      expect((rules.levelOf(guild), rules.maxSections(guild)), (1, 2));
-      expect(rules.levelOf(withXp(100)), 2);
-      expect(rules.maxSections(withXp(300)), 3);
-      expect(rules.earned(withXp(250), 50).xp, 300);
-    });
+    test(
+      'SOC-47 decision 221 the XP its sections earn in it sets its level and '
+      'its size',
+      () {
+        expect((rules.levelOf(guild), rules.maxSections(guild)), (1, 2));
+        expect(rules.levelOf(withXp(100)), 2);
+        expect(rules.maxSections(withXp(300)), 3);
+        expect(rules.earned(withXp(250), 50).xp, 300);
+      },
+    );
 
     test('SOC-03 SOC-52 decision 129 a section without a guild applies as a '
         'trainee', () {
@@ -236,7 +239,7 @@ void main() {
   });
 
   group('GuildRules on the plan data', () {
-    test('SOC-53 Q-SOC-18 a guild needs commander level 10; it holds 5 '
+    test('SOC-53 decision 221 a guild needs commander level 10; it holds 5 '
         'sections at level 1, 16 at 60', () {
       final progression = parsePlanData().units.progression;
 

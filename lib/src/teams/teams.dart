@@ -158,11 +158,10 @@ final class TeamRules {
                 (throw ArgumentError.value(medal.key, 'tier', 'unknown'))),
   );
 
-  /// The HQ manager of a team at the battle start, among its [candidates]
-  /// (HQ-05 to HQ-07, SOC-29): the most medal points, then the commander
-  /// with the most XP, then a draw with [random] (decision 211). He stays
-  /// manager until he delegates, online or not (HQ-07, HQ-08). Throws an
-  /// [ArgumentError] for a team with no player.
+  /// The best ranked of [candidates] for the HQ manager role (HQ-05,
+  /// HQ-06, SOC-29): the most medal points, then the commander with the
+  /// most XP, then a draw with [random] (decision 211), drawn only on an
+  /// exact tie. Throws an [ArgumentError] for no candidate.
   HqManager hqManager(
     Iterable<ManagerCandidate> candidates,
     SeededRandom random,
@@ -184,8 +183,24 @@ final class TeamRules {
       for (final candidate in ranked)
         if (compare(candidate, ranked.first) == 0) candidate.playerId,
     ];
-    return HqManager(tied[_index(tied.length, random)]);
+    return HqManager(
+      tied.length == 1 ? tied.single : tied[_index(tied.length, random)],
+    );
   }
+
+  /// The HQ manager of a team once [entering] logs in to the battle
+  /// (HQ-07, decision 220): he takes the role when the team has no
+  /// [manager] yet, or when he ranks above him ([hqManager]). The manager
+  /// is compared as he is, whether the role was delegated to him or not,
+  /// and an exact tie is drawn (assumed, Q-HQ-12). The role does not
+  /// change while the manager is offline (HQ-08).
+  HqManager afterLogIn({
+    required ManagerCandidate? manager,
+    required ManagerCandidate entering,
+    required SeededRandom random,
+  }) => manager == null || manager.playerId == entering.playerId
+      ? HqManager(entering.playerId)
+      : hqManager([manager, entering], random);
 }
 
 /// Why a delegation is refused.
@@ -226,8 +241,10 @@ final class DelegationRefused extends Delegation {
 
 /// {@template hq_manager}
 /// The player who manages a team's HQ: he posts team orders and map
-/// markers and moves the HQ (HQ-05, HQ-09). The role changes only when he
-/// delegates it; nobody takes it over while he is offline (HQ-07, HQ-08).
+/// markers and moves the HQ (HQ-05, HQ-09). The role changes when he
+/// delegates it or when a higher-ranking player logs in
+/// ([TeamRules.afterLogIn]); nobody takes it over while he is offline
+/// (HQ-07, HQ-08).
 /// {@endtemplate}
 final class HqManager {
   /// {@macro hq_manager}
