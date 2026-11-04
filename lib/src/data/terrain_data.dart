@@ -80,6 +80,7 @@ final class TerrainData {
       craters: Craters(
         maxDepthM: craters.number('max_depth_m'),
         fillableByEngineers: craters.boolean('fillable_by_engineers'),
+        depthPerShotM: craters.number('depth_per_shot_m'),
       ),
       objects: Map.unmodifiable({
         for (final MapEntry(:key, :value)
@@ -213,13 +214,22 @@ final class TerrainType {
 /// {@endtemplate}
 final class Craters {
   /// {@macro craters}
-  const new({required this.maxDepthM, required this.fillableByEngineers});
+  const new({
+    required this.maxDepthM,
+    required this.fillableByEngineers,
+    required this.depthPerShotM,
+  });
 
   /// Deepest crater, in metres.
   final double maxDepthM;
 
   /// Whether engineers can fill a crater.
   final bool fillableByEngineers;
+
+  /// How deep, at its centre, the crater of one shot of a weapon that
+  /// `deforms_terrain` is; it is as wide as the weapon's splash (MAP-46;
+  /// assumed, Q-MAP-19).
+  final double depthPerShotM;
 }
 
 /// {@template terrain_object}

@@ -33,6 +33,7 @@ void validateGameData({
   _checkSlopeRows(terrain);
   _checkApMax(units, battle.ap.max);
   _checkProjectileSpeeds(combat);
+  _checkCraterWeapons(combat);
   _checkSpeedCaps(units);
   _checkCommanderLevels(units.progression.commanderLevels);
   _checkTrees(units);
@@ -257,6 +258,21 @@ void _checkProjectileSpeeds(CombatData combat) {
         'weapon_types.${weapon.id}.projectile_speed_mps',
         null,
         'missing: a direct-fire weapon needs it for first-person shots',
+      );
+    }
+  }
+}
+
+/// Q-MAP-19: a weapon that deforms terrain digs a crater as wide as its
+/// splash, so it needs one.
+void _checkCraterWeapons(CombatData combat) {
+  for (final weapon in combat.weaponTypes.values) {
+    if (weapon.deformsTerrain && weapon.splashRadiusM == null) {
+      _fail(
+        combatFile,
+        'weapon_types.${weapon.id}.splash_radius_m',
+        null,
+        'missing: a weapon that deforms terrain digs a crater that wide',
       );
     }
   }

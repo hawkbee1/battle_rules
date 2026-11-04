@@ -405,6 +405,18 @@ void main() {
         );
       });
 
+      test('MAP-07 rejects a weapon that deforms terrain without a splash', () {
+        expect(
+          () => parseFixtures(combat: {'splash_radius_m: 6, ': ''}),
+          throwsDataError(
+            'combat.yaml',
+            'weapon_types.cannon.splash_radius_m',
+            null,
+            'missing: a weapon that deforms terrain digs a crater that wide',
+          ),
+        );
+      });
+
       test('COMBAT-14 rejects a direct-fire weapon without a projectile '
           'speed', () {
         expect(

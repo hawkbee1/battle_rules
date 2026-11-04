@@ -52,6 +52,7 @@ terrain:
 craters:
   max_depth_m: 12
   fillable_by_engineers: false
+  depth_per_shot_m: 1.5
 
 objects:
   tree:   { armor_type: structure, blocks_los: false, conceals: forest, destructible: true, hp: 80 }

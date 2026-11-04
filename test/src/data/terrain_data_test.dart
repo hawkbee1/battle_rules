@@ -66,6 +66,7 @@ void main() {
     test('reads craters', () {
       expect(terrain.craters.maxDepthM, 12);
       expect(terrain.craters.fillableByEngineers, isFalse);
+      expect(terrain.craters.depthPerShotM, 1.5);
     });
 
     test('MAP-40 reads objects with their armor type', () {
