@@ -17,7 +17,7 @@ void main() {
           isA<StateError>().having(
             (error) => error.message,
             'message',
-            contains('"bronze" occurs 5 times'),
+            contains('"bronze" occurs 6 times'),
           ),
         ),
       );

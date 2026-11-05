@@ -34,5 +34,18 @@ void main() {
       });
       expect(medals.actionKinds, ['hit', 'build']);
     });
+
+    test('decision 231 reads the friendly kill thresholds', () {
+      expect(medals.friendlyKillThresholds, {
+        'bronze': 2,
+        'silver': 6,
+        'gold': 12,
+      });
+    });
+
+    test('decision 230 reads the hit-rate flag', () {
+      expect(medals.hitRateFlag.sigmas, 2.5);
+      expect(medals.hitRateFlag.minShots, 30);
+    });
   });
 }
