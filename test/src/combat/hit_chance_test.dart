@@ -184,6 +184,37 @@ void main() {
         [for (var i = 0; i < 5; i++) second.nextDouble()],
       );
     });
+
+    test('a random resumed at its state draws what it would have drawn', () {
+      final live = XorshiftRandom(5)..nextDouble();
+      final resumed = XorshiftRandom.resume(seed: 5, state: live.state);
+
+      expect(resumed.seed, 5);
+      expect(resumed.state, live.state);
+      expect(
+        [for (var i = 0; i < 5; i++) resumed.nextDouble()],
+        [for (var i = 0; i < 5; i++) live.nextDouble()],
+      );
+    });
+
+    test('a random resumes only from four 32-bit words', () {
+      expect(
+        () => XorshiftRandom.resume(seed: 1, state: [1, 2, 3]),
+        throwsArgumentError,
+      );
+      expect(
+        () => XorshiftRandom.resume(seed: 1, state: [1, 2, 3, 4, 5]),
+        throwsArgumentError,
+      );
+      expect(
+        () => XorshiftRandom.resume(seed: 1, state: [1, 2, -3, 4]),
+        throwsArgumentError,
+      );
+      expect(
+        () => XorshiftRandom.resume(seed: 1, state: [1, 2, 3, 0x100000000]),
+        throwsArgumentError,
+      );
+    });
   });
 
   group('indirect fire', () {

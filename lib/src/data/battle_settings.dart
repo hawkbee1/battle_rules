@@ -123,6 +123,55 @@ final class BattleSettings {
   /// Seconds a section cannot deploy after storing all its units by choice
   /// (decision 120).
   final double sectionRedeployLockS;
+
+  /// These settings in the shape of `battle.yaml`: [BattleSettings.parse]
+  /// reads them back from their JSON text. A battle's snapshot keeps its
+  /// own settings this way (decision 172, stack decision 2).
+  Map<String, Object> toData() => {
+    'version': version,
+    'commander_death': {
+      'xp_loss_share': commanderDeath.xpLossShare,
+      'ap_loss_share': commanderDeath.apLossShare,
+      'morale_loss': commanderDeath.moraleLoss,
+    },
+    'ap': {'max': ap.max, 'recovery_per_hour': ap.recoveryPerHour},
+    'battle_start': {
+      'restore_ap': battleStart.restoreAp,
+      'restore_hp': battleStart.restoreHp,
+      'restore_morale': battleStart.restoreMorale,
+    },
+    'teams': {'count': teamCount},
+    'newcomers': {'guilds_offered': guildsOffered},
+    'capture': {
+      'duration_s': capture.durationS,
+      'pot_ap': capture.potAp,
+      'contribution_ap': capture.contributionAp,
+      'radius_m': capture.radiusM,
+    },
+    'hq': {
+      'hp': hq.hp,
+      'ap_max': hq.apMax,
+      'ap_per_m': hq.apPerM,
+      'speed_m_per_h': hq.speedMPerH,
+      'hit_box_m': {
+        'width': hq.hitBox.width,
+        'length': hq.hitBox.length,
+        'height': hq.hitBox.height,
+      },
+    },
+    'victory': {
+      'relics_to_hold': victory.relicsToHold,
+      'hold_s': victory.holdS,
+    },
+    'storage': {
+      'store_radius_m': storage.storeRadiusM,
+      'recall_s': storage.recallS,
+      'deploy_ap': storage.deployAp,
+      'deploy_block_radius_m': storage.deployBlockRadiusM,
+    },
+    'weather': {'mode': weather.mode, 'states': weather.states},
+    'section_redeploy_lock_s': sectionRedeployLockS,
+  };
 }
 
 /// {@template commander_death}

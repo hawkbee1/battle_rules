@@ -28,6 +28,29 @@ final class XorshiftRandom implements SeededRandom {
     }
   }
 
+  /// The random of [seed] resumed at [state], a [state] it had: it draws
+  /// what it would have drawn next. A battle restored from its snapshot
+  /// rolls the same as the live one (stack decision 2).
+  ///
+  /// Throws an [ArgumentError] unless [state] holds four 32-bit words.
+  new resume({required this.seed, required List<int> state})
+    : _x = _word(state, 0),
+      _y = _word(state, 1),
+      _z = _word(state, 2),
+      _w = _word(state, 3) {
+    if (state.length != 4) {
+      throw ArgumentError.value(state, 'state', 'must hold four words');
+    }
+  }
+
+  static int _word(List<int> state, int index) {
+    final word = index < state.length ? state[index] : 0;
+    if (word < 0 || word > _mask) {
+      throw ArgumentError.value(state, 'state', 'must hold 32-bit words');
+    }
+    return word;
+  }
+
   static const _mask = 0xFFFFFFFF;
 
   /// The seed.
@@ -37,6 +60,9 @@ final class XorshiftRandom implements SeededRandom {
   int _y;
   int _z;
   int _w;
+
+  /// Its four 32-bit words now, for [XorshiftRandom.resume].
+  List<int> get state => List.unmodifiable([_x, _y, _z, _w]);
 
   int _next32() {
     final t = (_x ^ (_x << 11)) & _mask;

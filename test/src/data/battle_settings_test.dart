@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:battle_rules/battle_rules.dart';
 import 'package:test/test.dart';
 
@@ -61,6 +63,16 @@ void main() {
       expect(battle.weather.mode, 'random');
       expect(battle.weather.states, ['clear', 'fog']);
       expect(battle.sectionRedeployLockS, 1800);
+    });
+
+    test('writes its values back in the shape parse reads', () {
+      final data = battle.toData();
+      final again = BattleSettings.parse(jsonEncode(data));
+
+      expect(again.toData(), equals(data));
+      expect(again.hq.hitBox.height, 6);
+      expect(again.weather.states, ['clear', 'fog']);
+      expect(data['ap'], {'max': 20.0, 'recovery_per_hour': 2.0});
     });
   });
 }
