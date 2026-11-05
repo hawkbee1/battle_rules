@@ -20,6 +20,22 @@ void main() {
       expect(check.interval, const Duration(minutes: 10));
     });
 
+    test('decision 229 checks fall every interval from the battle start', () {
+      const check = ServerFireCheck(
+        ServerManagedSettings(fireChance: 0.25, checkIntervalS: 600),
+      );
+
+      expect(check.nextAfter(Duration.zero), const Duration(minutes: 10));
+      expect(
+        check.nextAfter(const Duration(minutes: 3)),
+        const Duration(minutes: 10),
+      );
+      expect(
+        check.nextAfter(const Duration(minutes: 10)),
+        const Duration(minutes: 20),
+      );
+    });
+
     test('AI-07 decision 196 the plan fires at 50 % every 30 minutes', () {
       final check = ServerFireCheck(parsePlanData().battle.serverManaged);
 
