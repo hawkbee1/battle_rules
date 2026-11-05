@@ -6,7 +6,8 @@ import '../../helpers/plan_data.dart';
 
 void main() {
   group('XpRules on the fixtures', () {
-    // Fixture progression: hit 1, kill 10, role action 3, capture 40;
+    // Fixture progression: hit 1, kill 10, role action 3, capture 40, HQ
+    // hit 4, HQ destruction 12;
     // scaling cap 2.5; window 300 s, × 0.25 per repeat, same spot within
     // 5 m; victory 4; section share 0.1.
     late XpRules rules;
@@ -30,6 +31,22 @@ void main() {
         earn(const KillXp(targetId: 't1', attackerXp: 0, targetXp: 0)).xp,
         10,
       );
+    });
+
+    test('decision 224 an HQ hit and its destruction earn their XP, '
+        'unscaled; repeats shrink and a friendly HQ earns nothing', () {
+      final first = earn(const HqHitXp(hqId: 'hq-blue'));
+      final again = earn(
+        const HqHitXp(hqId: 'hq-blue'),
+        history: first.history,
+        at: const Duration(seconds: 10),
+      );
+
+      expect(first.xp, 4);
+      expect(again.xp, 1);
+      expect(earn(const HqDestroyedXp(hqId: 'hq-blue')).xp, 12);
+      expect(earn(const HqHitXp(hqId: 'hq-red', friendly: true)).xp, 0);
+      expect(earn(const HqDestroyedXp(hqId: 'hq-red', friendly: true)).xp, 0);
     });
 
     test('UNIT-06 a completed role action earns its XP', () {
@@ -213,6 +230,15 @@ void main() {
       ]);
 
       expect(rules.captureShares(lost), isEmpty);
+    });
+
+    test('decision 224 the plan gives 2 XP an HQ hit and 10 for its '
+        'destruction', () {
+      XpAward earn(XpEvent event) =>
+          rules.earn(event, history: XpHistory(), at: Duration.zero);
+
+      expect(earn(const HqHitXp(hqId: 'hq')).xp, 2);
+      expect(earn(const HqDestroyedXp(hqId: 'hq')).xp, 10);
     });
 
     test('UNIT-10 the plan halves each repeat within 10 minutes', () {

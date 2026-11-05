@@ -38,13 +38,13 @@ sealed class XpOrigin {
 }
 
 /// {@template from_target}
-/// A unit hit, killed, healed, repaired or spotted.
+/// A unit hit, killed, healed, repaired or spotted, or an HQ hit.
 /// {@endtemplate}
 final class FromTarget extends XpOrigin {
   /// {@macro from_target}
   const new(this.targetId);
 
-  /// The target's unit id.
+  /// The target's unit or HQ id.
   final String targetId;
 }
 
@@ -131,6 +131,34 @@ final class KillXp extends XpEvent {
   final bool friendly;
 }
 
+/// {@template hq_hit_xp}
+/// The unit hit the HQ [hqId] (decision 224).
+/// {@endtemplate}
+final class HqHitXp extends XpEvent {
+  /// {@macro hq_hit_xp}
+  const new({required this.hqId, this.friendly = false});
+
+  /// The HQ hit.
+  final String hqId;
+
+  /// Whether the HQ is the attacker's team's.
+  final bool friendly;
+}
+
+/// {@template hq_destroyed_xp}
+/// The unit destroyed the HQ [hqId] (decision 224).
+/// {@endtemplate}
+final class HqDestroyedXp extends XpEvent {
+  /// {@macro hq_destroyed_xp}
+  const new({required this.hqId, this.friendly = false});
+
+  /// The HQ destroyed.
+  final String hqId;
+
+  /// Whether the HQ was the attacker's team's.
+  final bool friendly;
+}
+
 /// {@template role_action_xp}
 /// The unit completed a build, a repair, a heal or a spotting report
 /// (UNIT-06): [origin] is the build's position or the unit it served.
@@ -183,8 +211,10 @@ final class XpRules {
   /// The XP [event] earns a unit whose recent awards are [history], at
   /// battle time [at].
   ///
-  /// Hits and kills earn their XP times [targetScaling]; hitting or killing
-  /// an ally earns nothing unless `friendly_hits_give_xp` (UNIT-10). Each
+  /// Hits and kills earn their XP times [targetScaling]; HQ hits and an
+  /// HQ's destruction earn theirs as they are, an HQ having no XP
+  /// (decision 224). Hitting or killing an ally, or one's own HQ, earns
+  /// nothing unless `friendly_hits_give_xp` (UNIT-10). Each
   /// earlier award from the same origin inside `diminishing.window_s`
   /// multiplies the XP by `factor_per_repeat`: the same target, or a build
   /// within `same_spot_radius_m` of an earlier one (UNIT-10,
@@ -220,6 +250,16 @@ final class XpRules {
           FromTarget(targetId),
           friendly,
         ),
+      HqHitXp(:final hqId, :final friendly) => (
+        sources.hqHit,
+        FromTarget(hqId),
+        friendly,
+      ),
+      HqDestroyedXp(:final hqId, :final friendly) => (
+        sources.hqDestruction,
+        FromTarget(hqId),
+        friendly,
+      ),
       RoleActionXp(:final origin) => (sources.roleAction, origin, false),
     };
     final recent = _inWindow(history, at);

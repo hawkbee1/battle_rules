@@ -147,7 +147,17 @@ void main() {
       final progression = units.progression;
       final xp = progression.xpSources;
 
-      expect([xp.hit, xp.kill, xp.roleAction, xp.capture], [1, 10, 3, 40]);
+      expect(
+        [
+          xp.hit,
+          xp.kill,
+          xp.roleAction,
+          xp.capture,
+          xp.hqHit,
+          xp.hqDestruction,
+        ],
+        [1, 10, 3, 40, 4, 12],
+      );
       expect(progression.targetScalingCap, 2.5);
       expect(progression.diminishing.windowS, 300);
       expect(progression.diminishing.factorPerRepeat, 0.25);
