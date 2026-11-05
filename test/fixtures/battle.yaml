@@ -49,3 +49,7 @@ weather:
   states: [clear, fog]
 
 section_redeploy_lock_s: 1800
+
+server_managed:
+  fire_chance: 0.25
+  check_interval_s: 600

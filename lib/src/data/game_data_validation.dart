@@ -41,6 +41,7 @@ void validateGameData({
   _checkPurchases(units, combat, economy);
   _checkTeams(battle);
   _checkBattleStart(battle.battleStart);
+  _checkServerManaged(battle.serverManaged);
 }
 
 /// Checks one battle's own settings, which an admin chose (decision 172),
@@ -60,6 +61,7 @@ void validateSettings({
   _checkUpFrontAp(units, combat, terrain, battle);
   _checkTeams(battle);
   _checkBattleStart(battle.battleStart);
+  _checkServerManaged(battle.serverManaged);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -228,6 +230,26 @@ void _checkTeams(BattleSettings battle) {
       'newcomers.guilds_offered',
       battle.guildsOffered,
       'must be 1 or more',
+    );
+  }
+}
+
+/// AI-07: a fire chance is a chance, and checks come one after the other.
+void _checkServerManaged(ServerManagedSettings settings) {
+  if (settings.fireChance < 0 || settings.fireChance > 1) {
+    _fail(
+      battleFile,
+      'server_managed.fire_chance',
+      settings.fireChance,
+      'must be from 0 to 1',
+    );
+  }
+  if (settings.checkIntervalS <= 0) {
+    _fail(
+      battleFile,
+      'server_managed.check_interval_s',
+      settings.checkIntervalS,
+      'must be above 0',
     );
   }
 }

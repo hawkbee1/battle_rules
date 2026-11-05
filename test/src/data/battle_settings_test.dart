@@ -65,6 +65,11 @@ void main() {
       expect(battle.sectionRedeployLockS, 1800);
     });
 
+    test('AI-07 reads the fire check of server-managed units', () {
+      expect(battle.serverManaged.fireChance, 0.25);
+      expect(battle.serverManaged.checkIntervalS, 600);
+    });
+
     test('writes its values back in the shape parse reads', () {
       final data = battle.toData();
       final again = BattleSettings.parse(jsonEncode(data));
@@ -73,6 +78,7 @@ void main() {
       expect(again.hq.hitBox.height, 6);
       expect(again.weather.states, ['clear', 'fog']);
       expect(data['ap'], {'max': 20.0, 'recovery_per_hour': 2.0});
+      expect(again.serverManaged.checkIntervalS, 600);
     });
   });
 }

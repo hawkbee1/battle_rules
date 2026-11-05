@@ -40,6 +40,7 @@ export 'src/scenario/scenario_runner.dart';
 export 'src/storage/prisoners.dart';
 export 'src/storage/storage_rules.dart';
 export 'src/storage/unit_location.dart';
+export 'src/teams/server_fire_check.dart';
 export 'src/teams/teams.dart';
 export 'src/victory/victory.dart';
 export 'src/vision/vision.dart';

@@ -804,6 +804,41 @@ void main() {
         );
       });
 
+      test('AI-07 a fire chance is from 0 to 1 and checks come at an '
+          'interval above 0', () {
+        expect(
+          () =>
+              parseFixtures(battle: {'fire_chance: 0.25': 'fire_chance: 1.5'}),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.fire_chance',
+            1.5,
+            'must be from 0 to 1',
+          ),
+        );
+        expect(
+          () =>
+              parseFixtures(battle: {'fire_chance: 0.25': 'fire_chance: -0.1'}),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.fire_chance',
+            -0.1,
+            'must be from 0 to 1',
+          ),
+        );
+        expect(
+          () => parseFixtures(
+            battle: {'check_interval_s: 600': 'check_interval_s: 0'},
+          ),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.check_interval_s',
+            0,
+            'must be above 0',
+          ),
+        );
+      });
+
       test('SOC-03 a newcomer is offered at least one guild', () {
         expect(
           () =>
