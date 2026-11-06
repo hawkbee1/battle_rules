@@ -23,6 +23,7 @@ final class BattleSettings {
     required this.storage,
     required this.weather,
     required this.sectionRedeployLockS,
+    required this.serverManaged,
   });
 
   /// Parses the text of `battle.yaml`. Checks types and required keys only;
@@ -37,6 +38,7 @@ final class BattleSettings {
     final victory = reader.map('victory');
     final storage = reader.map('storage');
     final weather = reader.map('weather');
+    final serverManaged = reader.map('server_managed');
     return BattleSettings(
       version: reader.integer('version'),
       commanderDeath: CommanderDeath(
@@ -83,6 +85,10 @@ final class BattleSettings {
         states: weather.strings('states'),
       ),
       sectionRedeployLockS: reader.number('section_redeploy_lock_s'),
+      serverManaged: ServerManagedSettings(
+        fireChance: serverManaged.number('fire_chance'),
+        checkIntervalS: serverManaged.number('check_interval_s'),
+      ),
     );
   }
 
@@ -123,6 +129,62 @@ final class BattleSettings {
   /// Seconds a section cannot deploy after storing all its units by choice
   /// (decision 120).
   final double sectionRedeployLockS;
+
+  /// The fire check of server-managed units (decisions 160, 196).
+  final ServerManagedSettings serverManaged;
+
+  /// These settings in the shape of `battle.yaml`: [BattleSettings.parse]
+  /// reads them back from their JSON text. A battle's snapshot keeps its
+  /// own settings this way (decision 172, stack decision 2).
+  Map<String, Object> toData() => {
+    'version': version,
+    'commander_death': {
+      'xp_loss_share': commanderDeath.xpLossShare,
+      'ap_loss_share': commanderDeath.apLossShare,
+      'morale_loss': commanderDeath.moraleLoss,
+    },
+    'ap': {'max': ap.max, 'recovery_per_hour': ap.recoveryPerHour},
+    'battle_start': {
+      'restore_ap': battleStart.restoreAp,
+      'restore_hp': battleStart.restoreHp,
+      'restore_morale': battleStart.restoreMorale,
+    },
+    'teams': {'count': teamCount},
+    'newcomers': {'guilds_offered': guildsOffered},
+    'capture': {
+      'duration_s': capture.durationS,
+      'pot_ap': capture.potAp,
+      'contribution_ap': capture.contributionAp,
+      'radius_m': capture.radiusM,
+    },
+    'hq': {
+      'hp': hq.hp,
+      'ap_max': hq.apMax,
+      'ap_per_m': hq.apPerM,
+      'speed_m_per_h': hq.speedMPerH,
+      'hit_box_m': {
+        'width': hq.hitBox.width,
+        'length': hq.hitBox.length,
+        'height': hq.hitBox.height,
+      },
+    },
+    'victory': {
+      'relics_to_hold': victory.relicsToHold,
+      'hold_s': victory.holdS,
+    },
+    'storage': {
+      'store_radius_m': storage.storeRadiusM,
+      'recall_s': storage.recallS,
+      'deploy_ap': storage.deployAp,
+      'deploy_block_radius_m': storage.deployBlockRadiusM,
+    },
+    'weather': {'mode': weather.mode, 'states': weather.states},
+    'section_redeploy_lock_s': sectionRedeployLockS,
+    'server_managed': {
+      'fire_chance': serverManaged.fireChance,
+      'check_interval_s': serverManaged.checkIntervalS,
+    },
+  };
 }
 
 /// {@template commander_death}
@@ -287,4 +349,19 @@ final class WeatherSettings {
 
   /// The weather states a battle can have (`terrain.yaml` `weather`).
   final List<String> states;
+}
+
+/// {@template server_managed_settings}
+/// The fire check of server-managed units (`server_managed`, decisions 160,
+/// 196).
+/// {@endtemplate}
+final class ServerManagedSettings {
+  /// {@macro server_managed_settings}
+  const new({required this.fireChance, required this.checkIntervalS});
+
+  /// The chance a unit fires at a check, from 0 to 1.
+  final double fireChance;
+
+  /// Seconds between two checks of a unit.
+  final double checkIntervalS;
 }

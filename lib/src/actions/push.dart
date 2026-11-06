@@ -125,13 +125,15 @@ final class PushingRules {
   /// used pot stays (decision 173). [unitsInPathAtM] are the distances
   /// along the path of the units standing in its way: with `min_pushers +
   /// n` pushers it crushes the first `n` it meets and stops at the next
-  /// one (RELIC-25, decision 185).
+  /// one (RELIC-25, decision 185). The [crushed] units it already crushed
+  /// on this path count among those `n`.
   PushMove move({
     required PushPot pot,
     required int pushers,
     required List<PathSample> path,
     required Duration start,
     List<double> unitsInPathAtM = const [],
+    int crushed = 0,
   }) {
     if (pushers < push.minPushers) {
       return PushMove(
@@ -143,8 +145,10 @@ final class PushingRules {
       );
     }
     final units = [...unitsInPathAtM]..sort();
-    final canCrush =
-        (pushers - push.minPushers) * push.crushUnitsPerExtraPusher;
+    final canCrush = math.max(
+      0,
+      (pushers - push.minPushers) * push.crushUnitsPerExtraPusher - crushed,
+    );
     final blockedAt = units.length > canCrush ? units[canCrush] : null;
     final mover = Mover.relic(push);
     var distance = 0.0;

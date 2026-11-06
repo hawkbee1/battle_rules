@@ -186,6 +186,26 @@ void main() {
       expect(threeMore.distanceM, 10);
       expect(threeMore.stop, PushStop.pathEnd);
     });
+
+    test('RELIC-25 decision 185 the units already crushed on the path count '
+        'among those it may crush', () {
+      PushMove after(int crushed) => pushing.move(
+        pot: const PushPot(owner: 'red', ap: 1000),
+        pushers: 7,
+        path: [_sample('grass', 10)],
+        start: Duration.zero,
+        unitsInPathAtM: const [2, 4],
+        crushed: crushed,
+      );
+
+      // 7 pushers crush 2 units here.
+      expect(after(1).crushed, 1);
+      expect(after(1).distanceM, 4);
+      expect(after(2).crushed, 0);
+      expect(after(2).distanceM, 2);
+      expect(after(3).crushed, 0);
+      expect(after(3).stop, PushStop.blocked);
+    });
   });
 
   group('HQ move', () {

@@ -440,6 +440,8 @@ final class XpSources {
     required this.kill,
     required this.roleAction,
     required this.capture,
+    required this.hqHit,
+    required this.hqDestruction,
   });
 
   /// XP per hit.
@@ -454,6 +456,12 @@ final class XpSources {
   /// XP of a capture, shared by the AP each unit put into the pot
   /// (decision 179).
   final double capture;
+
+  /// XP per hit on an enemy HQ (decision 224).
+  final double hqHit;
+
+  /// XP for destroying an enemy HQ (decision 224).
+  final double hqDestruction;
 }
 
 /// {@template diminishing}
@@ -694,6 +702,8 @@ Progression _readProgression(DataReader progression) {
       kill: xp.number('kill'),
       roleAction: xp.number('role_action'),
       capture: xp.number('capture'),
+      hqHit: xp.number('hq_hit'),
+      hqDestruction: xp.number('hq_destruction'),
     ),
     targetScalingCap: progression.map('target_scaling').number('cap'),
     diminishing: Diminishing(

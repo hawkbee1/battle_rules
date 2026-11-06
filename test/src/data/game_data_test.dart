@@ -405,6 +405,18 @@ void main() {
         );
       });
 
+      test('MAP-07 rejects a weapon that deforms terrain without a splash', () {
+        expect(
+          () => parseFixtures(combat: {'splash_radius_m: 6, ': ''}),
+          throwsDataError(
+            'combat.yaml',
+            'weapon_types.cannon.splash_radius_m',
+            null,
+            'missing: a weapon that deforms terrain digs a crater that wide',
+          ),
+        );
+      });
+
       test('COMBAT-14 rejects a direct-fire weapon without a projectile '
           'speed', () {
         expect(
@@ -788,6 +800,41 @@ void main() {
             'battle_start.restore_hp',
             'half',
             'must be full',
+          ),
+        );
+      });
+
+      test('AI-07 a fire chance is from 0 to 1 and checks come at an '
+          'interval above 0', () {
+        expect(
+          () =>
+              parseFixtures(battle: {'fire_chance: 0.25': 'fire_chance: 1.5'}),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.fire_chance',
+            1.5,
+            'must be from 0 to 1',
+          ),
+        );
+        expect(
+          () =>
+              parseFixtures(battle: {'fire_chance: 0.25': 'fire_chance: -0.1'}),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.fire_chance',
+            -0.1,
+            'must be from 0 to 1',
+          ),
+        );
+        expect(
+          () => parseFixtures(
+            battle: {'check_interval_s: 600': 'check_interval_s: 0'},
+          ),
+          throwsDataError(
+            'battle.yaml',
+            'server_managed.check_interval_s',
+            0,
+            'must be above 0',
           ),
         );
       });

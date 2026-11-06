@@ -203,51 +203,47 @@ void main() {
       test('manages a team that has no manager yet', () {
         expect(
           rules
-              .afterLogIn(manager: null, entering: low, random: noDraw)
+              .afterLogIn(holder: null, entering: low, random: noDraw)
               .playerId,
           'p1',
         );
       });
 
-      test('takes the role from a lower-ranking manager, delegated or not', () {
+      test('decision 227 takes the role from a lower-ranking holder', () {
         expect(
           rules
-              .afterLogIn(manager: low, entering: high, random: noDraw)
+              .afterLogIn(holder: low, entering: high, random: noDraw)
               .playerId,
           'p2',
         );
       });
 
-      test('leaves it to a higher-ranking manager or to himself', () {
+      test('leaves it to a higher-ranking holder or to the holder', () {
         expect(
           rules
-              .afterLogIn(manager: high, entering: low, random: noDraw)
+              .afterLogIn(holder: high, entering: low, random: noDraw)
               .playerId,
           'p2',
         );
         expect(
           rules
-              .afterLogIn(manager: high, entering: high, random: noDraw)
+              .afterLogIn(holder: high, entering: high, random: noDraw)
               .playerId,
           'p2',
         );
       });
 
-      test('Q-HQ-12 draws the role on an exact tie', () {
+      test('decision 211 draws the role on an exact tie', () {
         expect(
           rules
-              .afterLogIn(
-                manager: low,
-                entering: twin,
-                random: FixedRandom([0]),
-              )
+              .afterLogIn(holder: low, entering: twin, random: FixedRandom([0]))
               .playerId,
           'p1',
         );
         expect(
           rules
               .afterLogIn(
-                manager: low,
+                holder: low,
                 entering: twin,
                 random: FixedRandom([0.99]),
               )

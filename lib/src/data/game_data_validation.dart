@@ -33,6 +33,7 @@ void validateGameData({
   _checkSlopeRows(terrain);
   _checkApMax(units, battle.ap.max);
   _checkProjectileSpeeds(combat);
+  _checkCraterWeapons(combat);
   _checkSpeedCaps(units);
   _checkCommanderLevels(units.progression.commanderLevels);
   _checkTrees(units);
@@ -40,6 +41,7 @@ void validateGameData({
   _checkPurchases(units, combat, economy);
   _checkTeams(battle);
   _checkBattleStart(battle.battleStart);
+  _checkServerManaged(battle.serverManaged);
 }
 
 /// Checks one battle's own settings, which an admin chose (decision 172),
@@ -59,6 +61,7 @@ void validateSettings({
   _checkUpFrontAp(units, combat, terrain, battle);
   _checkTeams(battle);
   _checkBattleStart(battle.battleStart);
+  _checkServerManaged(battle.serverManaged);
 }
 
 Never _fail(String file, String key, Object? value, String problem) =>
@@ -231,6 +234,26 @@ void _checkTeams(BattleSettings battle) {
   }
 }
 
+/// AI-07: a fire chance is a chance, and checks come one after the other.
+void _checkServerManaged(ServerManagedSettings settings) {
+  if (settings.fireChance < 0 || settings.fireChance > 1) {
+    _fail(
+      battleFile,
+      'server_managed.fire_chance',
+      settings.fireChance,
+      'must be from 0 to 1',
+    );
+  }
+  if (settings.checkIntervalS <= 0) {
+    _fail(
+      battleFile,
+      'server_managed.check_interval_s',
+      settings.checkIntervalS,
+      'must be above 0',
+    );
+  }
+}
+
 /// UNIT-31, decision 83: every battle starts with full AP and HP and the
 /// base morale; no other value has a rule.
 void _checkBattleStart(BattleStart start) {
@@ -257,6 +280,21 @@ void _checkProjectileSpeeds(CombatData combat) {
         'weapon_types.${weapon.id}.projectile_speed_mps',
         null,
         'missing: a direct-fire weapon needs it for first-person shots',
+      );
+    }
+  }
+}
+
+/// Q-MAP-19: a weapon that deforms terrain digs a crater as wide as its
+/// splash, so it needs one.
+void _checkCraterWeapons(CombatData combat) {
+  for (final weapon in combat.weaponTypes.values) {
+    if (weapon.deformsTerrain && weapon.splashRadiusM == null) {
+      _fail(
+        combatFile,
+        'weapon_types.${weapon.id}.splash_radius_m',
+        null,
+        'missing: a weapon that deforms terrain digs a crater that wide',
       );
     }
   }

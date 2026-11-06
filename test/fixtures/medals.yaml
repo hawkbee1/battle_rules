@@ -9,3 +9,5 @@ kills:
 actions:
   default:   { bronze: 20, silver: 100, gold: 400 }
   kinds: [hit, build]
+friendly_kills: { bronze: 2, silver: 6, gold: 12 }
+hit_rate_flag: { sigmas: 2.5, min_shots: 30 }

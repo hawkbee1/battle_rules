@@ -188,19 +188,22 @@ final class TeamRules {
     );
   }
 
-  /// The HQ manager of a team once [entering] logs in to the battle
-  /// (HQ-07, decision 220): he takes the role when the team has no
-  /// [manager] yet, or when he ranks above him ([hqManager]). The manager
-  /// is compared as he is, whether the role was delegated to him or not,
-  /// and an exact tie is drawn (assumed, Q-HQ-12). The role does not
-  /// change while the manager is offline (HQ-08).
+  /// The player who holds the HQ manager role by rank once [entering]
+  /// logs in to the battle (HQ-07, decisions 220, 227): [entering] when
+  /// the team has no [holder] yet, or when they rank above the [holder]
+  /// ([hqManager]), an exact tie drawn (decision 211).
+  ///
+  /// The [holder] is the player who would manage the HQ had nobody
+  /// delegated the role: a delegate loses it only to a player who takes it
+  /// this way. The role does not change while the manager is offline
+  /// (HQ-08).
   HqManager afterLogIn({
-    required ManagerCandidate? manager,
+    required ManagerCandidate? holder,
     required ManagerCandidate entering,
     required SeededRandom random,
-  }) => manager == null || manager.playerId == entering.playerId
+  }) => holder == null || holder.playerId == entering.playerId
       ? HqManager(entering.playerId)
-      : hqManager([manager, entering], random);
+      : hqManager([holder, entering], random);
 }
 
 /// Why a delegation is refused.
