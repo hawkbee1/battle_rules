@@ -143,6 +143,19 @@ void main() {
       expect(sees(through(const TerrainObstacle('grass'))), isTrue);
     });
 
+    test('MAP-26 a hill between the observer and the target blocks it', () {
+      expect(
+        sees(
+          const SightLine(
+            distanceM: 10,
+            observerTerrain: 'grass',
+            obstacles: [GroundObstacle()],
+          ),
+        ),
+        isFalse,
+      );
+    });
+
     test('MAP-28 destroyed objects stop blocking', () {
       expect(
         sees(

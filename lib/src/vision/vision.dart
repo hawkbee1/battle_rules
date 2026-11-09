@@ -20,6 +20,15 @@ final class TerrainObstacle extends SightObstacle {
   final String terrainType;
 }
 
+/// {@template ground_obstacle}
+/// The ground itself, rising above the sight line between the observer and
+/// the target: a hill (MAP-26, vision is computed in 3D). It always blocks.
+/// {@endtemplate}
+final class GroundObstacle extends SightObstacle {
+  /// {@macro ground_obstacle}
+  const new();
+}
+
 /// {@template object_obstacle}
 /// An object on the sight line, for example a building, intact or
 /// [destroyed].
@@ -148,12 +157,14 @@ final class Vision {
         line.forestCrossedM * rules.forestVisionCostPerM;
   }
 
-  /// Whether [obstacle] blocks the line: terrain and objects that block the
-  /// line of sight (MAP-26), unless destroyed (MAP-28).
+  /// Whether [obstacle] blocks the line: the ground rising above it, and
+  /// terrain and objects that block the line of sight (MAP-26), unless
+  /// destroyed (MAP-28).
   ///
   /// Throws an [ArgumentError] for a terrain or object type the tables do
   /// not have.
   bool blocks(SightObstacle obstacle) => switch (obstacle) {
+    GroundObstacle() => true,
     TerrainObstacle(:final terrainType) =>
       (terrain.terrainTypes[terrainType] ??
               (throw ArgumentError.value(
