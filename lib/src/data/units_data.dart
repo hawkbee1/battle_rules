@@ -4,6 +4,11 @@ import 'package:battle_rules/src/data/hit_box.dart';
 /// The name of the units data file in messages.
 const unitsFile = 'units.yaml';
 
+/// The unit type that exists in testing battles only (UNIT-44, decision
+/// 239): 10,000 AP and every action. The one unit type whose `ap_max` is not
+/// `ap.max`.
+const testUnitId = 'test_unit';
+
 /// An action a unit can do besides moving and shooting (UNIT-38,
 /// decision 132). An order for an action its type does not list is refused.
 enum UnitAction {

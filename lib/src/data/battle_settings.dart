@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:battle_rules/src/data/data_reader.dart';
+import 'package:battle_rules/src/data/game_data_exception.dart';
 import 'package:battle_rules/src/data/hit_box.dart';
 
 /// The name of the battle settings file in messages.
@@ -24,6 +27,7 @@ final class BattleSettings {
     required this.weather,
     required this.sectionRedeployLockS,
     required this.serverManaged,
+    required this.testUnits,
   });
 
   /// Parses the text of `battle.yaml`. Checks types and required keys only;
@@ -39,6 +43,14 @@ final class BattleSettings {
     final storage = reader.map('storage');
     final weather = reader.map('weather');
     final serverManaged = reader.map('server_managed');
+    if (ap.has('recovery_per_hour')) {
+      ap.fail(
+        'recovery_per_hour',
+        ap.optionalNumber('recovery_per_hour'),
+        'renamed: ap.recovery_delay_s is the seconds to recover one AP '
+            '(decision 238)',
+      );
+    }
     return BattleSettings(
       version: reader.integer('version'),
       commanderDeath: CommanderDeath(
@@ -48,7 +60,7 @@ final class BattleSettings {
       ),
       ap: ApSettings(
         max: ap.number('max'),
-        recoveryPerHour: ap.number('recovery_per_hour'),
+        recoveryDelayS: ap.integer('recovery_delay_s'),
       ),
       battleStart: BattleStart(
         restoreAp: start.string('restore_ap'),
@@ -89,6 +101,7 @@ final class BattleSettings {
         fireChance: serverManaged.number('fire_chance'),
         checkIntervalS: serverManaged.number('check_interval_s'),
       ),
+      testUnits: reader.boolean('test_units'),
     );
   }
 
@@ -98,7 +111,7 @@ final class BattleSettings {
   /// What a commander's death costs (decisions 80, 125).
   final CommanderDeath commanderDeath;
 
-  /// AP maximum and recovery (decisions 167, 168, 172).
+  /// AP maximum and recovery (decisions 167, 168, 172, 238).
   final ApSettings ap;
 
   /// What every battle of a war restores at its start (decision 83).
@@ -133,6 +146,21 @@ final class BattleSettings {
   /// The fire check of server-managed units (decisions 160, 196).
   final ServerManagedSettings serverManaged;
 
+  /// Whether the test unit may be bought (UNIT-44, decision 239): on in
+  /// testing battles only.
+  final bool testUnits;
+
+  /// These settings with the values of [overrides], a battle's own choices
+  /// in the shape of `battle.yaml`, keeping the others (decisions 172,
+  /// 238): `{'ap': {'recovery_delay_s': 1}, 'test_units': true}` changes
+  /// those two values and nothing else.
+  ///
+  /// Throws a [GameDataException] for a key that is no battle setting, and
+  /// for a value of the wrong type. `validateSettings` checks the rules
+  /// between the values.
+  BattleSettings overriddenBy(Map<String, Object?> overrides) =>
+      BattleSettings.parse(jsonEncode(_overlay(toData(), overrides, '')));
+
   /// These settings in the shape of `battle.yaml`: [BattleSettings.parse]
   /// reads them back from their JSON text. A battle's snapshot keeps its
   /// own settings this way (decision 172, stack decision 2).
@@ -143,7 +171,7 @@ final class BattleSettings {
       'ap_loss_share': commanderDeath.apLossShare,
       'morale_loss': commanderDeath.moraleLoss,
     },
-    'ap': {'max': ap.max, 'recovery_per_hour': ap.recoveryPerHour},
+    'ap': {'max': ap.max, 'recovery_delay_s': ap.recoveryDelayS},
     'battle_start': {
       'restore_ap': battleStart.restoreAp,
       'restore_hp': battleStart.restoreHp,
@@ -184,7 +212,45 @@ final class BattleSettings {
       'fire_chance': serverManaged.fireChance,
       'check_interval_s': serverManaged.checkIntervalS,
     },
+    'test_units': testUnits,
   };
+}
+
+/// [base] with [overrides] laid over it, map by map. A key [base] does not
+/// have is no setting: it throws rather than being ignored, so a typo in a
+/// battle's settings is seen. [path] is the dotted path of [base].
+Map<String, Object?> _overlay(
+  Map<String, Object?> base,
+  Map<String, Object?> overrides,
+  String path,
+) {
+  final merged = {...base};
+  for (final MapEntry(:key, :value) in overrides.entries) {
+    final at = path.isEmpty ? key : '$path.$key';
+    if (!base.containsKey(key)) {
+      throw GameDataException(
+        file: battleFile,
+        key: at,
+        value: value,
+        problem: 'not a battle setting',
+      );
+    }
+    final current = base[key];
+    if (current is Map<String, Object?>) {
+      if (value is! Map<String, Object?>) {
+        throw GameDataException(
+          file: battleFile,
+          key: at,
+          value: value,
+          problem: 'must be a map',
+        );
+      }
+      merged[key] = _overlay(current, value, at);
+    } else {
+      merged[key] = value;
+    }
+  }
+  return merged;
 }
 
 /// {@template commander_death}
@@ -209,17 +275,19 @@ final class CommanderDeath {
 }
 
 /// {@template ap_settings}
-/// AP maximum and recovery (`ap`, decisions 167, 168, 172).
+/// AP maximum and recovery (`ap`, decisions 167, 168, 172, 238).
 /// {@endtemplate}
 final class ApSettings {
   /// {@macro ap_settings}
-  const new({required this.max, required this.recoveryPerHour});
+  const new({required this.max, required this.recoveryDelayS});
 
-  /// AP maximum of every unit (decision 167).
+  /// AP maximum of every unit (decision 167); the test unit excepted
+  /// (decision 239).
   final double max;
 
-  /// AP every unit recovers per hour.
-  final double recoveryPerHour;
+  /// Seconds a unit needs to gain one AP; 3600 is one AP per hour
+  /// (decision 238).
+  final int recoveryDelayS;
 }
 
 /// {@template battle_start}

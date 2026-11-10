@@ -208,7 +208,11 @@ void main() {
     });
 
     test('decision 180 ground and slope change the AP, not the time', () {
-      final pool = ApPool.full(max: 100, recoveryPerHour: 1, at: Duration.zero);
+      final pool = ApPool.full(
+        max: 100,
+        recoveryDelayS: 3600,
+        at: Duration.zero,
+      );
       final grass = cost.move(
         mover: walker,
         pool: pool,
@@ -231,7 +235,7 @@ void main() {
         'back', () {
       final empty = ApPool(
         max: 10,
-        recoveryPerHour: 4,
+        recoveryDelayS: 900,
         value: 0,
         updatedAt: Duration.zero,
       );
@@ -248,7 +252,11 @@ void main() {
     });
 
     test('an impassable path does not move', () {
-      final pool = ApPool.full(max: 10, recoveryPerHour: 1, at: Duration.zero);
+      final pool = ApPool.full(
+        max: 10,
+        recoveryDelayS: 3600,
+        at: Duration.zero,
+      );
 
       expect(
         cost.move(

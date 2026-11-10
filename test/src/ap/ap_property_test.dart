@@ -18,7 +18,7 @@ void main() {
       final max = unit.stats.apMax;
       var pool = ApPool.full(
         max: max,
-        recoveryPerHour: data.battle.ap.recoveryPerHour,
+        recoveryDelayS: data.battle.ap.recoveryDelayS,
         at: Duration.zero,
       );
       var now = Duration.zero;

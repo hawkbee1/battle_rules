@@ -96,6 +96,15 @@ units:
     weapons: { default: rifle, allowed: [rifle] }
     actions: [capture]
     role: { max_total_weight: 4, max_unit_weight: 2 }
+  test_unit:               # UNIT-44, decision 239: the one unit whose ap_max is not ap.max
+    category: soldier
+    movement_class: foot
+    armor_type: infantry
+    hit_box_m: { width: 0.5, length: 0.5, height: 2 }
+    base: { weight: 1, hp: 100, ap_max: 500, ap_per_m: 1, attack: 10, defense: 10, move_speed: 4, vision_range: 200 }
+    weapons: { default: rifle, allowed: [rifle, cannon, charge] }
+    actions: [capture, push, build, repair, heal, observe]
+    role: { build: [bridge], repair: true, observe: { vision_bonus_m: 25, duration_s: 500, ap: 7, can_move: false }, heal: 14, heal_ap: 5, relay_range: 110, shares_with: all_sections_of_team }
 
 progression:
   xp_sources: { hit: 1, kill: 10, role_action: 3, capture: 40, hq_hit: 4, hq_destruction: 12 }

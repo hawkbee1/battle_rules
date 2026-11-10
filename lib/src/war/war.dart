@@ -198,7 +198,7 @@ final class WarRules {
     location: const Stored(),
     pool: ApPool.full(
       max: type.stats.apMax,
-      recoveryPerHour: battle.ap.recoveryPerHour,
+      recoveryDelayS: battle.ap.recoveryDelayS,
       at: Duration.zero,
     ),
     health: Health.full(type.stats.hp),

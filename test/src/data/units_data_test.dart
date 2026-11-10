@@ -24,6 +24,7 @@ void main() {
         'tank',
         'helicopter',
         'boat',
+        'test_unit',
       ]);
     });
 

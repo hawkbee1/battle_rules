@@ -9,7 +9,7 @@ Duration _seconds(double seconds) =>
 
 /// A pool with [ap] AP at time 0, recovering 1 AP per hour.
 ApPool _pool(double ap, {double max = 1000}) =>
-    ApPool(max: max, recoveryPerHour: 1, value: ap, updatedAt: Duration.zero);
+    ApPool(max: max, recoveryDelayS: 3600, value: ap, updatedAt: Duration.zero);
 
 WeaponDone _done(WeaponResult result) => result as WeaponDone;
 
@@ -103,7 +103,7 @@ void main() {
       var state = WeaponState.forNewUnit(artillery, data.combat);
       var pool = ApPool.full(
         max: artillery.stats.apMax,
-        recoveryPerHour: data.battle.ap.recoveryPerHour,
+        recoveryDelayS: data.battle.ap.recoveryDelayS,
         at: Duration.zero,
       );
 

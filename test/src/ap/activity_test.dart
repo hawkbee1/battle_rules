@@ -12,7 +12,7 @@ void main() {
 
   ApPool fullPool(UnitType unit) => ApPool.full(
     max: unit.stats.apMax,
-    recoveryPerHour: data.battle.ap.recoveryPerHour,
+    recoveryDelayS: data.battle.ap.recoveryDelayS,
     at: Duration.zero,
   );
 
@@ -111,7 +111,7 @@ void main() {
     });
 
     test('COMBAT-06 a paid action waits until the unit has enough AP', () {
-      final rate = data.battle.ap.recoveryPerHour;
+      final delayS = data.battle.ap.recoveryDelayS;
       final empty = fullPool(soldier).withValue(0, Duration.zero);
       final start = started(
         startActivity(
@@ -122,8 +122,8 @@ void main() {
         ),
       );
       final wait = Duration(
-        microseconds: (rifle.apPerShot / rate * Duration.microsecondsPerHour)
-            .ceil(),
+        microseconds:
+            (rifle.apPerShot * delayS * Duration.microsecondsPerSecond).ceil(),
       );
 
       expect(start.at, wait);

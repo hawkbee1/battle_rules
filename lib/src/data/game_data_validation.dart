@@ -32,6 +32,7 @@ void validateGameData({
   _checkTerrainColumns(terrain);
   _checkSlopeRows(terrain);
   _checkApMax(units, battle.ap.max);
+  _checkRecoveryDelay(battle.ap);
   _checkProjectileSpeeds(combat);
   _checkCraterWeapons(combat);
   _checkSpeedCaps(units);
@@ -45,9 +46,9 @@ void validateGameData({
 }
 
 /// Checks one battle's own settings, which an admin chose (decision 172),
-/// against the shared definitions: the AP maximum, the up-front AP of the
-/// actions, the teams and the battle start. `validateGameData` runs the
-/// same checks on the default settings.
+/// against the shared definitions: the AP maximum, the AP recovery delay,
+/// the up-front AP of the actions, the teams and the battle start.
+/// `validateGameData` runs the same checks on the default settings.
 ///
 /// Throws a [GameDataException] naming `battle.yaml`, the key and the value
 /// of the first problem found.
@@ -58,6 +59,7 @@ void validateSettings({
   required BattleSettings battle,
 }) {
   _checkApMax(units, battle.ap.max);
+  _checkRecoveryDelay(battle.ap);
   _checkUpFrontAp(units, combat, terrain, battle);
   _checkTeams(battle);
   _checkBattleStart(battle.battleStart);
@@ -204,10 +206,11 @@ void _checkSlopeRows(TerrainData terrain) {
 }
 
 /// COMBAT-01, decision 167: every unit's `ap_max` is the one AP maximum,
-/// `battle.yaml` `ap.max`.
+/// `battle.yaml` `ap.max`. The test unit is the one exception (UNIT-44,
+/// decision 239).
 void _checkApMax(UnitsData units, double max) {
   for (final unit in units.unitTypes.values) {
-    if (unit.stats.apMax != max) {
+    if (unit.id != testUnitId && unit.stats.apMax != max) {
       _fail(
         unitsFile,
         'units.${unit.id}.base.ap_max',
@@ -215,6 +218,19 @@ void _checkApMax(UnitsData units, double max) {
         'differs from $battleFile ap.max $max',
       );
     }
+  }
+}
+
+/// COMBAT-02, decision 238: a unit gains one AP in at least one second, so
+/// the delay is never zero and a unit at 0 AP is never frozen (COMBAT-06).
+void _checkRecoveryDelay(ApSettings ap) {
+  if (ap.recoveryDelayS < 1) {
+    _fail(
+      battleFile,
+      'ap.recovery_delay_s',
+      ap.recoveryDelayS,
+      'must be at least 1 second',
+    );
   }
 }
 

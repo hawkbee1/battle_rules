@@ -8,7 +8,7 @@ commander_death:
 
 ap:
   max: 20
-  recovery_per_hour: 2
+  recovery_delay_s: 1800
 
 battle_start:
   restore_ap: full
@@ -53,3 +53,6 @@ section_redeploy_lock_s: 1800
 server_managed:
   fire_chance: 0.25
   check_interval_s: 600
+
+# UNIT-44, decision 239: off, as in a public war
+test_units: false

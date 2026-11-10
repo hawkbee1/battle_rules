@@ -3,11 +3,11 @@ import 'package:test/test.dart';
 
 import '../../helpers/plan_data.dart';
 
-/// A synthetic pool: 10 AP at most, [perHour] AP per hour, [value] AP at
-/// time 0.
-ApPool _pool(double value, {double perHour = 2}) => ApPool(
+/// A synthetic pool: 10 AP at most, one AP every [delayS] seconds, [value] AP
+/// at time 0. The default delay is 2 AP per hour.
+ApPool _pool(double value, {int delayS = 1800}) => ApPool(
   max: 10,
-  recoveryPerHour: perHour,
+  recoveryDelayS: delayS,
   value: value,
   updatedAt: Duration.zero,
 );
@@ -26,11 +26,11 @@ void main() {
         'per hour', () {
       final data = parsePlanData();
       final soldier = data.units.unitTypes['soldier']!;
-      final rate = data.battle.ap.recoveryPerHour;
+      final delayS = data.battle.ap.recoveryDelayS;
       final UnitStats(:apMax, :apPerM, :moveSpeed) = soldier.stats;
       final pool = ApPool.full(
         max: apMax,
-        recoveryPerHour: rate,
+        recoveryDelayS: delayS,
         at: Duration.zero,
       );
       // The AP of a full pool pay this far on flat grass.
@@ -56,9 +56,39 @@ void main() {
         _closeToDuration(_hours(freeMetres / moveSpeed / 3600)),
       );
       expect(free.pool.value, greaterThanOrEqualTo(0));
-      // Each metre past those costs apPerM AP, which come back at `rate`.
-      expect(twoMore.arrivesAt, _closeToDuration(_hours(2 * apPerM / rate)));
+      // Each metre past those costs apPerM AP, one of which comes back every
+      // delayS seconds.
+      expect(
+        twoMore.arrivesAt,
+        _closeToDuration(_hours(2 * apPerM * delayS / 3600)),
+      );
       expect(twoMore.pool.value, 0);
+    });
+
+    test('COMBAT-02 COMBAT-06 with a 1 s recovery delay a soldier at 0 AP '
+        'walks a metre a second, in the default battle a metre an hour', () {
+      final data = parsePlanData();
+      final soldier = data.units.unitTypes['soldier']!;
+      final own = data.settingsWith({
+        'ap': {'recovery_delay_s': 1},
+      });
+
+      Movement walk100m(BattleSettings settings) => moveAlong(
+        pool: ApPool(
+          max: soldier.stats.apMax,
+          recoveryDelayS: settings.ap.recoveryDelayS,
+          value: 0,
+          updatedAt: Duration.zero,
+        ),
+        start: Duration.zero,
+        lengthM: 100,
+        apPerM: soldier.stats.apPerM,
+        speedMps: soldier.stats.moveSpeed,
+      );
+
+      expect(soldier.stats.apPerM, 1);
+      expect(walk100m(own).arrivesAt, const Duration(seconds: 100));
+      expect(walk100m(data.battle).arrivesAt, const Duration(hours: 100));
     });
 
     test('MAP-20 a unit at 0 AP moves as fast as its AP come back', () {
@@ -78,7 +108,7 @@ void main() {
 
     test('moves at full speed while the AP suffice', () {
       final move = moveAlong(
-        pool: _pool(10, perHour: 3600),
+        pool: _pool(10, delayS: 1),
         start: const Duration(seconds: 10),
         lengthM: 4,
         apPerM: 1,
@@ -92,7 +122,7 @@ void main() {
 
     test('COMBAT-02 the pool recovers on the way, up to its maximum', () {
       final move = moveAlong(
-        pool: _pool(8, perHour: 3600),
+        pool: _pool(8, delayS: 1),
         start: Duration.zero,
         lengthM: 10,
         apPerM: 0.5,

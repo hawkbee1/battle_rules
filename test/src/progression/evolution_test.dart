@@ -252,7 +252,7 @@ void main() {
         health: const Health(current: 1, max: 1000),
         pool: ApPool(
           max: 30,
-          recoveryPerHour: 1,
+          recoveryDelayS: 3600,
           value: 30,
           updatedAt: Duration.zero,
         ),

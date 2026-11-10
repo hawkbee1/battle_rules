@@ -6,18 +6,22 @@ import '../../helpers/plan_data.dart';
 const _hour = Duration(hours: 1);
 
 /// A synthetic pool: 10 AP at most, 2 AP per hour, [value] AP at time 0.
-ApPool _pool(double value) =>
-    ApPool(max: 10, recoveryPerHour: 2, value: value, updatedAt: Duration.zero);
+ApPool _pool(double value) => ApPool(
+  max: 10,
+  recoveryDelayS: 1800,
+  value: value,
+  updatedAt: Duration.zero,
+);
 
 void main() {
   group(ApPool, () {
-    test('rejects a non-positive maximum or recovery rate', () {
+    test('rejects a non-positive maximum or a delay under one second', () {
       expect(
-        () => ApPool(max: 0, recoveryPerHour: 1, value: 0, updatedAt: _hour),
+        () => ApPool(max: 0, recoveryDelayS: 3600, value: 0, updatedAt: _hour),
         throwsArgumentError,
       );
       expect(
-        () => ApPool(max: 5, recoveryPerHour: 0, value: 0, updatedAt: _hour),
+        () => ApPool(max: 5, recoveryDelayS: 0, value: 0, updatedAt: _hour),
         throwsArgumentError,
       );
     });
@@ -28,12 +32,12 @@ void main() {
     });
 
     test('full starts at the maximum', () {
-      final pool = ApPool.full(max: 10, recoveryPerHour: 2, at: _hour);
+      final pool = ApPool.full(max: 10, recoveryDelayS: 1800, at: _hour);
 
       expect(pool.value, 10);
       expect(pool.updatedAt, _hour);
       expect(pool.max, 10);
-      expect(pool.recoveryPerHour, 2);
+      expect(pool.recoveryDelayS, 1800);
     });
 
     test('COMBAT-02 recovers at a constant rate, up to the maximum', () {
@@ -45,19 +49,65 @@ void main() {
       expect(pool.apAt(_hour * 10), 10);
     });
 
-    test('HQ-34 a stored unit recovers at the battle rate, up to its '
-        'maximum', () {
-      final data = parsePlanData();
-      final soldier = data.units.unitTypes['soldier']!;
-      final rate = data.battle.ap.recoveryPerHour;
-      final empty = ApPool(
-        max: soldier.stats.apMax,
-        recoveryPerHour: rate,
+    test('COMBAT-02 recovers one AP per recovery_delay_s', () {
+      final pool = ApPool(
+        max: 10,
+        recoveryDelayS: 60,
         value: 0,
         updatedAt: Duration.zero,
       );
 
-      expect(empty.apAt(_hour), rate);
+      expect(pool.apAt(const Duration(seconds: 59)), closeTo(59 / 60, 1e-12));
+      expect(pool.apAt(const Duration(seconds: 60)), 1);
+      expect(pool.apAt(const Duration(minutes: 5)), 5);
+      expect(pool.recoveredIn(const Duration(minutes: 3)), 3);
+      expect(pool.timeToRecover(3), const Duration(minutes: 3));
+      expect(pool.timeToRecover(0), Duration.zero);
+      expect(pool.timeToRecover(-2), Duration.zero);
+    });
+
+    test('COMBAT-02 the default delay of the data is one AP per hour', () {
+      final data = parsePlanData();
+      final pool = ApPool(
+        max: 30,
+        recoveryDelayS: data.battle.ap.recoveryDelayS,
+        value: 0,
+        updatedAt: Duration.zero,
+      );
+
+      expect(data.battle.ap.recoveryDelayS, 3600);
+      expect(pool.apAt(_hour), 1);
+    });
+
+    test('COMBAT-02 the battle setting overrides the file', () {
+      final data = parsePlanData();
+      final own = data.settingsWith({
+        'ap': {'recovery_delay_s': 1},
+      });
+      final pool = ApPool(
+        max: 30,
+        recoveryDelayS: own.ap.recoveryDelayS,
+        value: 0,
+        updatedAt: Duration.zero,
+      );
+
+      expect(pool.apAt(const Duration(seconds: 5)), 5);
+      expect(data.battle.ap.recoveryDelayS, 3600);
+    });
+
+    test('HQ-34 a stored unit recovers at the battle rate, up to its '
+        'maximum', () {
+      final data = parsePlanData();
+      final soldier = data.units.unitTypes['soldier']!;
+      final delayS = data.battle.ap.recoveryDelayS;
+      final empty = ApPool(
+        max: soldier.stats.apMax,
+        recoveryDelayS: delayS,
+        value: 0,
+        updatedAt: Duration.zero,
+      );
+
+      expect(empty.apAt(_hour), Duration.secondsPerHour / delayS);
       expect(empty.apAt(_hour * 1000), soldier.stats.apMax);
     });
 
@@ -66,7 +116,7 @@ void main() {
       // Paid at 2 h, after waiting: empty then.
       final pending = ApPool(
         max: 10,
-        recoveryPerHour: 2,
+        recoveryDelayS: 1800,
         value: 1,
         updatedAt: _hour * 2,
       );
@@ -129,7 +179,7 @@ void main() {
       expect(pool.value, 7);
       expect(pool.updatedAt, _hour);
       expect(pool.max, 10);
-      expect(pool.recoveryPerHour, 2);
+      expect(pool.recoveryDelayS, 1800);
     });
   });
 }
