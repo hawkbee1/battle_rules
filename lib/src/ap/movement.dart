@@ -21,10 +21,10 @@ final class Movement {
 /// (COMBAT-03, COMBAT-04).
 ///
 /// The pool recovers on the way (COMBAT-02). A unit with no AP left is
-/// never frozen: it goes on as fast as its AP come back, `recoveryPerHour
-/// / apPerM` metres per hour (COMBAT-06, MAP-20). So it arrives at the
-/// later of `lengthM / speedMps` and the time its pool has recovered the
-/// whole cost: `(lengthM × apPerM − AP at start) / recoveryPerHour`.
+/// never frozen: it goes on as fast as its AP come back, `1 / (apPerM ×
+/// recoveryDelayS)` metres per second (COMBAT-06, MAP-20). So it arrives at
+/// the later of `lengthM / speedMps` and the time its pool has recovered the
+/// whole cost: `(lengthM × apPerM − AP at start) × recoveryDelayS`.
 Movement moveAlong({
   required ApPool pool,
   required Duration start,
@@ -42,14 +42,12 @@ Movement moveAlong({
   final begin = start < pool.updatedAt ? pool.updatedAt : start;
   final cost = lengthM * apPerM;
   final apAtStart = pool.apAt(begin);
-  final fullSpeedS = lengthM / speedMps;
-  final apLimitedS =
-      (cost - apAtStart) / pool.recoveryPerHour * Duration.secondsPerHour;
-  final seconds = math.max(fullSpeedS, apLimitedS);
-  final arrivesAt =
-      begin +
-      Duration(microseconds: (seconds * Duration.microsecondsPerSecond).ceil());
-  final rest = apAtStart + _hours(arrivesAt - begin) * pool.recoveryPerHour;
+  final fullSpeed = Duration(
+    microseconds: (lengthM / speedMps * Duration.microsecondsPerSecond).ceil(),
+  );
+  final apLimited = pool.timeToRecover(cost - apAtStart);
+  final arrivesAt = begin + (fullSpeed > apLimited ? fullSpeed : apLimited);
+  final rest = apAtStart + pool.recoveredIn(arrivesAt - begin);
   return Movement(
     arrivesAt: arrivesAt,
     pool: pool.withValue(
@@ -58,6 +56,3 @@ Movement moveAlong({
     ),
   );
 }
-
-double _hours(Duration duration) =>
-    duration.inMicroseconds / Duration.microsecondsPerHour;

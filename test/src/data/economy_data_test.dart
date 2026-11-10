@@ -19,7 +19,7 @@ void main() {
 
     test('reads the default and listed prices', () {
       expect(economy.defaultPrice, 80);
-      expect(economy.prices, {'camp': 450});
+      expect(economy.prices, {'camp': 450, 'test_unit': 0});
     });
 
     test('priceOf gives the listed price, else the default price', () {

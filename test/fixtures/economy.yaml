@@ -8,6 +8,7 @@ war_defaults:
 prices:
   default: 80
   camp: 450
+  test_unit: 0
 
 earnings:
   hit: 2

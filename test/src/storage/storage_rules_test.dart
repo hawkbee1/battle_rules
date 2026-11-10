@@ -24,7 +24,7 @@ void main() {
     UnitType type(String id) => data.units.unitTypes[id]!;
 
     ApPool pool(double value, {Duration at = Duration.zero}) =>
-        ApPool(max: 20, recoveryPerHour: 2, value: value, updatedAt: at);
+        ApPool(max: 20, recoveryDelayS: 1800, value: value, updatedAt: at);
 
     StoreOrder store(
       UnitLocation location, {
@@ -194,7 +194,7 @@ void main() {
           deploy(
             from: ApPool(
               max: 5,
-              recoveryPerHour: 1,
+              recoveryDelayS: 3600,
               value: 5,
               updatedAt: Duration.zero,
             ),
@@ -422,7 +422,7 @@ void main() {
     UnitType type(String id) => data.units.unitTypes[id]!;
 
     ApPool full(Duration at) =>
-        ApPool.full(max: 30, recoveryPerHour: 1, at: at);
+        ApPool.full(max: 30, recoveryDelayS: 3600, at: at);
 
     test('HQ-31 storing at 10 m is at once; at 10.5 m it is a recall', () {
       StoreOrder at(double distanceM) => storage.store(

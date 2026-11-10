@@ -76,8 +76,8 @@ final class GameData {
   final MedalsData medals;
 
   /// [settings], one battle's own settings, once checked against the shared
-  /// definitions (decision 172): the AP maximum, the up-front AP of the
-  /// actions, the teams and the battle start.
+  /// definitions (decision 172): the AP maximum and recovery delay, the
+  /// up-front AP of the actions, the teams and the battle start.
   ///
   /// Throws a [GameDataException] naming `battle.yaml`, the key and the
   /// value of the first problem found.
@@ -90,4 +90,12 @@ final class GameData {
     );
     return settings;
   }
+
+  /// The settings of a battle that overrides some of [battle]'s values with
+  /// [overrides] (decisions 172, 238), checked by [checkSettings].
+  ///
+  /// Throws a [GameDataException] for a key that is no setting, a value of
+  /// the wrong type or a value that breaks a rule.
+  BattleSettings settingsWith(Map<String, Object?> overrides) =>
+      checkSettings(battle.overriddenBy(overrides));
 }

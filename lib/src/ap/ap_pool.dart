@@ -5,28 +5,31 @@ import 'dart:math' as math;
 /// decision 1).
 ///
 /// It keeps its [value] at [updatedAt], its last update. AP at a later time
-/// is `min(max, value + hours since × recoveryPerHour)`: nothing runs per
-/// tick. It recovers whatever its owner does, stored or not (HQ-34). A unit
-/// and the HQ each have one.
+/// is `min(max, value + seconds since / recoveryDelayS)`: nothing runs per
+/// tick (decision 238). It recovers whatever its owner does, stored or not
+/// (HQ-34). A unit and the HQ each have one.
+///
+/// All the AP recovery math is here: [recoveredIn] and [timeToRecover] are
+/// the two directions of the rate, and movement uses them too.
 ///
 /// Times are battle times: the time elapsed since the battle started.
 /// {@endtemplate}
 final class ApPool {
   /// {@macro ap_pool}
   ///
-  /// Throws an [ArgumentError] unless `max` and `recoveryPerHour` are
-  /// positive and `value` is within `[0, max]`.
+  /// Throws an [ArgumentError] unless `max` is positive, `recoveryDelayS` is
+  /// at least 1 and `value` is within `[0, max]`.
   new({
     required this.max,
-    required this.recoveryPerHour,
+    required this.recoveryDelayS,
     required this.value,
     required this.updatedAt,
   }) {
     if (max <= 0) throw ArgumentError.value(max, 'max', 'must be positive');
-    if (recoveryPerHour <= 0) {
+    if (recoveryDelayS < 1) {
       throw ArgumentError.value(
-        recoveryPerHour,
-        'recoveryPerHour',
+        recoveryDelayS,
+        'recoveryDelayS',
         'must be positive: a unit at 0 AP is never frozen (COMBAT-06)',
       );
     }
@@ -38,11 +41,11 @@ final class ApPool {
   /// A full pool at [at], as every battle starts (decision 83).
   factory full({
     required double max,
-    required double recoveryPerHour,
+    required int recoveryDelayS,
     required Duration at,
   }) => ApPool(
     max: max,
-    recoveryPerHour: recoveryPerHour,
+    recoveryDelayS: recoveryDelayS,
     value: max,
     updatedAt: at,
   );
@@ -50,8 +53,9 @@ final class ApPool {
   /// The AP maximum (`ap_max`, decision 167).
   final double max;
 
-  /// AP recovered per hour (`battle.yaml` `ap.recovery_per_hour`).
-  final double recoveryPerHour;
+  /// Seconds to recover one AP (`battle.yaml` `ap.recovery_delay_s`,
+  /// decision 238).
+  final int recoveryDelayS;
 
   /// AP at [updatedAt].
   final double value;
@@ -66,9 +70,24 @@ final class ApPool {
   /// from that payment: never below 0.
   double apAt(Duration time) {
     if (time < updatedAt) {
-      return math.max(0, value - _hours(updatedAt - time) * recoveryPerHour);
+      return math.max(0, value - recoveredIn(updatedAt - time));
     }
-    return math.min(max, value + _hours(time - updatedAt) * recoveryPerHour);
+    return math.min(max, value + recoveredIn(time - updatedAt));
+  }
+
+  /// The AP this pool recovers in [elapsed] (COMBAT-02).
+  double recoveredIn(Duration elapsed) =>
+      elapsed.inMicroseconds /
+      (recoveryDelayS * Duration.microsecondsPerSecond);
+
+  /// The time this pool needs to recover [ap], rounded up to the microsecond
+  /// so that the AP it waits for are there at its end; zero for no AP.
+  Duration timeToRecover(double ap) {
+    if (ap <= 0) return Duration.zero;
+    return Duration(
+      microseconds: (ap * recoveryDelayS * Duration.microsecondsPerSecond)
+          .ceil(),
+    );
   }
 
   /// The earliest battle time from [from] at which the pool holds [cost];
@@ -81,7 +100,7 @@ final class ApPool {
     final start = from > updatedAt ? from : updatedAt;
     final missing = cost - apAt(start);
     if (missing <= 0) return start;
-    return start + _durationOfHours(missing / recoveryPerHour);
+    return start + timeToRecover(missing);
   }
 
   /// Pays [cost] at the earliest battle time from [from] at which the pool
@@ -100,16 +119,8 @@ final class ApPool {
   /// This pool holding [newValue] at battle time [time].
   ApPool withValue(double newValue, Duration time) => ApPool(
     max: max,
-    recoveryPerHour: recoveryPerHour,
+    recoveryDelayS: recoveryDelayS,
     value: newValue,
     updatedAt: time,
   );
 }
-
-double _hours(Duration duration) =>
-    duration.inMicroseconds / Duration.microsecondsPerHour;
-
-/// [hours] as a duration, rounded up to the microsecond so that the AP it
-/// waits for are there at its end.
-Duration _durationOfHours(double hours) =>
-    Duration(microseconds: (hours * Duration.microsecondsPerHour).ceil());

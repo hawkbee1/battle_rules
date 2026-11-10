@@ -22,7 +22,44 @@ void main() {
 
     test('reads the AP maximum and recovery', () {
       expect(battle.ap.max, 20);
-      expect(battle.ap.recoveryPerHour, 2);
+      expect(battle.ap.recoveryDelayS, 1800);
+    });
+
+    test('UNIT-44 reads whether test units are allowed', () {
+      expect(battle.testUnits, isFalse);
+    });
+
+    test('COMBAT-02 rejects the old recovery_per_hour key and says what '
+        'replaces it', () {
+      expect(
+        () => BattleSettings.parse(
+          readFixture('battle.yaml', {
+            'recovery_delay_s: 1800': 'recovery_per_hour: 2',
+          }),
+        ),
+        throwsDataError(
+          'battle.yaml',
+          'ap.recovery_per_hour',
+          2,
+          'recovery_delay_s',
+        ),
+      );
+    });
+
+    test('COMBAT-02 needs a whole number of seconds for the delay', () {
+      expect(
+        () => BattleSettings.parse(
+          readFixture('battle.yaml', {
+            'recovery_delay_s: 1800': 'recovery_delay_s: 0.5',
+          }),
+        ),
+        throwsDataError(
+          'battle.yaml',
+          'ap.recovery_delay_s',
+          0.5,
+          'must be an integer',
+        ),
+      );
     });
 
     test('reads the battle start, the team count and the guilds offered', () {
@@ -77,8 +114,67 @@ void main() {
       expect(again.toData(), equals(data));
       expect(again.hq.hitBox.height, 6);
       expect(again.weather.states, ['clear', 'fog']);
-      expect(data['ap'], {'max': 20.0, 'recovery_per_hour': 2.0});
+      expect(data['ap'], {'max': 20.0, 'recovery_delay_s': 1800});
+      expect(data['test_units'], isFalse);
       expect(again.serverManaged.checkIntervalS, 600);
+    });
+
+    group('overriddenBy', () {
+      test('decision 238 replaces the values it names and keeps the rest', () {
+        final own = battle.overriddenBy({
+          'ap': {'recovery_delay_s': 1},
+          'test_units': true,
+        });
+
+        expect(own.ap.recoveryDelayS, 1);
+        expect(own.testUnits, isTrue);
+        expect(own.ap.max, battle.ap.max);
+        expect(own.hq.hitBox.height, battle.hq.hitBox.height);
+        expect(own.weather.states, battle.weather.states);
+        expect(battle.ap.recoveryDelayS, 1800);
+        expect(battle.testUnits, isFalse);
+      });
+
+      test('keeps every value for no override', () {
+        expect(battle.overriddenBy(const {}).toData(), battle.toData());
+      });
+
+      test('names a key that is no battle setting', () {
+        expect(
+          () => battle.overriddenBy({
+            'ap': {'recovery_per_hour': 2},
+          }),
+          throwsDataError(
+            'battle.yaml',
+            'ap.recovery_per_hour',
+            2,
+            'not a battle setting',
+          ),
+        );
+        expect(
+          () => battle.overriddenBy({'speed': 3}),
+          throwsDataError('battle.yaml', 'speed', 3, 'not a battle setting'),
+        );
+      });
+
+      test('wants a map where the file has one', () {
+        expect(
+          () => battle.overriddenBy({'ap': 5}),
+          throwsDataError('battle.yaml', 'ap', 5, 'must be a map'),
+        );
+      });
+
+      test('wants the type of the file for a value', () {
+        expect(
+          () => battle.overriddenBy({'test_units': 'yes'}),
+          throwsDataError(
+            'battle.yaml',
+            'test_units',
+            'yes',
+            'must be true or false',
+          ),
+        );
+      });
     });
   });
 }

@@ -171,7 +171,7 @@ final class _Run {
         type,
         ApPool.full(
           max: type.stats.apMax,
-          recoveryPerHour: data.battle.ap.recoveryPerHour,
+          recoveryDelayS: data.battle.ap.recoveryDelayS,
           at: Duration.zero,
         ),
         WeaponState.forNewUnit(type, data.combat),

@@ -6,7 +6,7 @@ import '../../helpers/plan_data.dart';
 
 /// A pool with [ap] AP at time 0, recovering 1 AP per hour.
 ApPool _pool(double ap, {double max = 20}) =>
-    ApPool(max: max, recoveryPerHour: 1, value: ap, updatedAt: Duration.zero);
+    ApPool(max: max, recoveryDelayS: 3600, value: ap, updatedAt: Duration.zero);
 
 PathSample _sample(String terrain, double length) =>
     PathSample(terrainType: terrain, slopeDegrees: 0, lengthM: length);
@@ -219,7 +219,7 @@ void main() {
 
     ApPool hqPool({double? ap}) => ApPool(
       max: data.battle.hq.apMax,
-      recoveryPerHour: data.battle.ap.recoveryPerHour,
+      recoveryDelayS: data.battle.ap.recoveryDelayS,
       value: ap ?? data.battle.hq.apMax,
       updatedAt: Duration.zero,
     );
@@ -247,7 +247,7 @@ void main() {
         closeTo(
           hq.apMax -
               10 * hq.apPerM * mudFactor +
-              hours * data.battle.ap.recoveryPerHour,
+              hours * Duration.secondsPerHour / data.battle.ap.recoveryDelayS,
           1e-6,
         ),
       );
@@ -259,11 +259,12 @@ void main() {
       final hq = data.battle.hq;
       final mudFactor = data.terrain.terrainTypes['mud']!.apMultiplier['push']!;
       final moved = move([_sample('mud', 10)], pool: hqPool(ap: 0));
-      final hours = 10 * hq.apPerM * mudFactor / data.battle.ap.recoveryPerHour;
+      final seconds =
+          10 * hq.apPerM * mudFactor * data.battle.ap.recoveryDelayS;
 
       expect(
         moved.movement.arrivesAt.inMicroseconds,
-        closeTo(hours * Duration.microsecondsPerHour, 1),
+        closeTo(seconds * Duration.microsecondsPerSecond, 1),
       );
       expect(moved.movement.pool.value, 0);
     });

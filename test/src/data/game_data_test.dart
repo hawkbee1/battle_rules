@@ -47,6 +47,29 @@ void main() {
       expect(data.terrain.objects.keys, _rawKeys(terrain, 'objects'));
     });
 
+    test('decision 239 the plan test unit holds 10,000 AP and every '
+        'action, for nothing', () {
+      final testUnit = data.units.unitTypes[testUnitId]!;
+
+      expect(testUnit.stats.apMax, 10000);
+      expect(data.battle.ap.max, 30);
+      expect(testUnit.actions, UnitAction.values.toSet());
+      expect(testUnit.movementClass, 'foot');
+      expect(data.economy.priceOf(testUnitId), 0);
+      expect(
+        testUnit.stats.visionRange,
+        data.units.unitTypes.values
+            .map((unit) => unit.stats.visionRange)
+            .reduce((a, b) => a > b ? a : b),
+      );
+    });
+
+    test('decision 238 the plan default delay is one AP per hour, and '
+        'test units are off', () {
+      expect(data.battle.ap.recoveryDelayS, 3600);
+      expect(data.battle.testUnits, isFalse);
+    });
+
     test('COMBAT-22 has the armor types of the spec', () {
       expect(
         data.combat.armorTypes,
@@ -69,11 +92,35 @@ void main() {
 
     test("keeps one battle's own settings apart from the shared "
         'definitions (decision 172)', () {
-      final own = settings({'recovery_per_hour: 2': 'recovery_per_hour: 6'});
+      final own = settings({'recovery_delay_s: 1800': 'recovery_delay_s: 600'});
 
       expect(data.checkSettings(own), same(own));
-      expect(own.ap.recoveryPerHour, equals(6));
-      expect(data.battle.ap.recoveryPerHour, equals(2));
+      expect(own.ap.recoveryDelayS, equals(600));
+      expect(data.battle.ap.recoveryDelayS, equals(1800));
+    });
+
+    test("COMBAT-02 settingsWith lays a battle's overrides over the file "
+        'and checks them', () {
+      final own = data.settingsWith({
+        'ap': {'recovery_delay_s': 1},
+        'test_units': true,
+      });
+
+      expect(own.ap.recoveryDelayS, 1);
+      expect(own.testUnits, isTrue);
+      expect(data.battle.ap.recoveryDelayS, 1800);
+      expect(
+        () => data.settingsWith({
+          'ap': {'recovery_delay_s': 0},
+        }),
+        throwsDataError('battle.yaml', 'ap.recovery_delay_s', 0, 'at least 1'),
+      );
+      expect(
+        () => data.settingsWith({
+          'teams': {'count': 1},
+        }),
+        throwsA(isA<GameDataException>()),
+      );
     });
 
     test('UNIT-38 refuses an AP maximum below an action paid up front', () {
@@ -111,7 +158,7 @@ void main() {
     test('loads the fixtures without error', () {
       final data = parseFixtures();
 
-      expect(data.units.unitTypes, hasLength(10));
+      expect(data.units.unitTypes, hasLength(11));
       expect(data.combat.weaponTypes, hasLength(3));
       expect(data.terrain.terrainTypes, hasLength(6));
       expect(data.battle.ap.max, 20);
@@ -366,6 +413,39 @@ void main() {
             'differs from battle.yaml ap.max 20.0',
           ),
         );
+      });
+
+      test('decision 239 test_unit ap_max 10000 passes validation', () {
+        final data = parseFixtures(
+          units: {'ap_max: 500, ap_per_m: 1': 'ap_max: 10000, ap_per_m: 1'},
+        );
+
+        expect(data.units.unitTypes[testUnitId]!.stats.apMax, 10000);
+        expect(data.battle.ap.max, 20);
+      });
+
+      test('decision 167 another unit with ap_max != ap.max fails '
+          'validation', () {
+        expect(
+          () => parseFixtures(
+            units: {
+              'ap_max: 20, ap_per_m: 0.5, attack: 9':
+                  'ap_max: 10000, ap_per_m: 0.5, attack: 9',
+            },
+          ),
+          throwsDataError(
+            'units.yaml',
+            'units.tank.base.ap_max',
+            10000.0,
+            'differs from battle.yaml ap.max 20.0',
+          ),
+        );
+      });
+
+      test('decision 239 the test unit costs nothing', () {
+        final data = parseFixtures();
+
+        expect(data.economy.priceOf(testUnitId), 0);
       });
 
       test('COMBAT-01 checks every unit against battle.yaml ap.max', () {

@@ -5,7 +5,7 @@ import '../../helpers/fixtures.dart';
 
 /// A pool with [ap] AP at time 0, recovering 1 AP per hour.
 ApPool _pool(double ap, {double max = 20}) =>
-    ApPool(max: max, recoveryPerHour: 1, value: ap, updatedAt: Duration.zero);
+    ApPool(max: max, recoveryDelayS: 3600, value: ap, updatedAt: Duration.zero);
 
 const _friend = ActionTarget(friendly: true);
 
