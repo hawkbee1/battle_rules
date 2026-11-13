@@ -115,15 +115,37 @@ final class TeamRules {
     return [for (final team in teams) List.unmodifiable(team)];
   }
 
-  /// The team a newcomer joins: the one with the lowest of [teamPowers],
-  /// by team; a tie is drawn with [random] (SOC-02, SOC-06, decision 211).
-  /// Anyone joining is a newcomer, also into a running war (SOC-30).
-  String newcomerTeam(Map<String, double> teamPowers, SeededRandom random) {
-    final lowest = teamPowers.values.reduce((a, b) => a < b ? a : b);
+  /// The team a newcomer joins: the one with the lowest power per section
+  /// (`teamPowers` over `teamSections`), so each newcomer, who brings no XP,
+  /// weighs on the team that takes them and the next goes elsewhere; a tie
+  /// goes to the team with the fewest sections, then is drawn with [random]
+  /// (SOC-02, SOC-06, decision 211). Anyone joining is a newcomer, also into
+  /// a running war (SOC-30).
+  String newcomerTeam(
+    Map<String, double> teamPowers,
+    Map<String, int> teamSections,
+    SeededRandom random,
+  ) {
+    double perSection(String team) {
+      final count = teamSections[team] ?? 0;
+      return count == 0 ? 0 : teamPowers[team]! / count;
+    }
+
+    int sections(String team) => teamSections[team] ?? 0;
+    final teams = teamPowers.keys.toList()
+      ..sort((a, b) {
+        final byPower = perSection(a).compareTo(perSection(b));
+        if (byPower != 0) return byPower;
+        final bySections = sections(a).compareTo(sections(b));
+        return bySections != 0 ? bySections : a.compareTo(b);
+      });
+    final best = teams.first;
     final tied = [
-      for (final MapEntry(:key, :value) in teamPowers.entries)
-        if (value == lowest) key,
-    ]..sort();
+      for (final team in teams)
+        if (perSection(team) == perSection(best) &&
+            sections(team) == sections(best))
+          team,
+    ];
     return tied[_index(tied.length, random)];
   }
 

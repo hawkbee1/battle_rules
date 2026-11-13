@@ -79,15 +79,39 @@ void main() {
       ]);
     });
 
-    test('SOC-02 SOC-06 decision 211 a newcomer joins the weakest team; a '
-        'tie is drawn', () {
+    test('SOC-02 SOC-06 decision 211 a newcomer joins the team with the '
+        'lowest power per section; a tie goes to the fewest sections, then '
+        'is drawn', () {
       expect(
-        rules.newcomerTeam({'a': 100, 'b': 50, 'c': 70}, FixedRandom([0.5])),
+        rules.newcomerTeam(
+          {'a': 100, 'b': 50, 'c': 70},
+          {'a': 1, 'b': 1, 'c': 1},
+          FixedRandom([0.5]),
+        ),
         'b',
       );
-      const tied = {'b': 50.0, 'a': 50.0, 'c': 70.0};
-      expect(rules.newcomerTeam(tied, FixedRandom([0])), 'a');
-      expect(rules.newcomerTeam(tied, FixedRandom([0.99])), 'b');
+      // Power 50 over 5 sections is weaker than 40 over 1.
+      expect(
+        rules.newcomerTeam(
+          {'a': 40, 'b': 50},
+          {'a': 1, 'b': 5},
+          FixedRandom([0]),
+        ),
+        'b',
+      );
+      // Newcomers with no XP: the team that took one is not the weakest.
+      expect(
+        rules.newcomerTeam(
+          {'a': 0, 'b': 0},
+          {'a': 1, 'b': 0},
+          FixedRandom([0]),
+        ),
+        'b',
+      );
+      const powers = {'b': 50.0, 'a': 50.0, 'c': 70.0};
+      const sections = {'a': 1, 'b': 1, 'c': 1};
+      expect(rules.newcomerTeam(powers, sections, FixedRandom([0])), 'a');
+      expect(rules.newcomerTeam(powers, sections, FixedRandom([0.99])), 'b');
     });
 
     test('SOC-03 guilds_offered guilds drawn among those that opted in', () {
