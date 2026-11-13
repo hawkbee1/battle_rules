@@ -9,20 +9,25 @@ void main() {
   group('TeamRules on the fixtures', () {
     // Fixture: 3 teams, 3 guilds offered; medal points 1, 2 and 5.
     late TeamRules rules;
+    late UnitType commander;
 
     setUp(() {
       final data = parseFixtures();
       rules = TeamRules(battle: data.battle, medals: data.medals);
+      commander = data.units.unitTypes['commander']!;
     });
 
-    test('SOC-05 UNIT-12 decision 197 a section is worth its section XP and '
-        'the XP its units earned, spent or not', () {
+    test('SOC-05 UNIT-12 decision 197 a section is worth its section XP, '
+        'the XP its units earned, spent or not, and their base power', () {
       expect(
         rules.sectionPower(
           sectionXp: 100,
-          units: const [UnitXp(earned: 50, unspent: 10), UnitXp(earned: 30)],
+          units: [
+            (type: commander, xp: const UnitXp(earned: 50, unspent: 10)),
+            (type: commander, xp: const UnitXp(earned: 30)),
+          ],
         ),
-        180,
+        200,
       );
     });
 

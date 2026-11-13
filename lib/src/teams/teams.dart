@@ -1,6 +1,7 @@
 import 'package:battle_rules/src/combat/seeded_random.dart';
 import 'package:battle_rules/src/data/battle_settings.dart';
 import 'package:battle_rules/src/data/medals_data.dart';
+import 'package:battle_rules/src/data/units_data.dart';
 import 'package:battle_rules/src/progression/xp.dart';
 
 /// {@template team_section}
@@ -62,14 +63,17 @@ final class TeamRules {
   /// The `medals.yaml` data.
   final MedalsData medals;
 
-  /// A section's power: its section XP and the XP each unit it owns has
-  /// earned, spent or not (SOC-05, UNIT-12, decisions 93, 197). A team's
-  /// power is the sum of its sections'. There is no notion of active
-  /// players.
+  /// A section's power: its section XP, and for each unit it owns the XP it
+  /// has earned, spent or not, plus the `basePower` of its type (SOC-05,
+  /// UNIT-12, decisions 93, 197). A team's power is the sum of its
+  /// sections'. There is no notion of active players.
   double sectionPower({
     required double sectionXp,
-    required Iterable<UnitXp> units,
-  }) => units.fold(sectionXp, (sum, unit) => sum + unit.earned);
+    required Iterable<({UnitType type, UnitXp xp})> units,
+  }) => units.fold(
+    sectionXp,
+    (sum, unit) => sum + unit.type.basePower + unit.xp.earned,
+  );
 
   /// The `teams.count` teams of a battle start, balanced by power with the
   /// sections of each guild kept together (SOC-20, decision 103): the

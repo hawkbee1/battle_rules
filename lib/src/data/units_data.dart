@@ -89,6 +89,7 @@ final class UnitType {
   const new({
     required this.id,
     required this.category,
+    required this.basePower,
     required this.movementClass,
     required this.capabilities,
     required this.flight,
@@ -110,6 +111,9 @@ final class UnitType {
 
   /// Its category, for example `soldier` or `vehicle`.
   final String category;
+
+  /// What the unit adds to the power of its section (`base_power`, SOC-05).
+  final double basePower;
 
   /// Its ground movement class (`foot`, `wheeled`, `tracked`); null for a
   /// unit that moves only on water (a boat).
@@ -170,6 +174,7 @@ final class UnitType {
       UnitType(
         id: id,
         category: category,
+        basePower: basePower,
         movementClass: movementClass,
         capabilities: capabilities,
         flight: flight,
@@ -613,6 +618,7 @@ UnitType _readUnitType(String id, DataReader unit) {
   return UnitType(
     id: id,
     category: unit.string('category'),
+    basePower: unit.number('base_power'),
     movementClass: unit.optionalString('movement_class'),
     capabilities: Set.unmodifiable(
       _readNames(unit, 'capabilities', Capability.values.asNameMap()),
